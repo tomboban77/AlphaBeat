@@ -40,43 +40,43 @@ Tone: **Risk-on.**
 
 ## The Top 10
 
-### 1. NVDA — NVIDIA · *High conviction · Medium horizon*
+### 1. NVDA — NVIDIA · _High conviction · Medium horizon_
 
 The number one beneficiary of the inference-at-scale phase. Hyperscaler capex commentary continues to surprise to the upside, sovereign AI orders keep stacking, and the supply-demand imbalance for Blackwell hasn't normalized. Position-sized, not all-in.
 
-### 2. MSFT — Microsoft · *High conviction · Long horizon*
+### 2. MSFT — Microsoft · _High conviction · Long horizon_
 
 Azure AI revenue keeps decoupling from non-AI cloud, and Copilot attach is finally showing in the M365 ARPU line. The capex headwind is real, but the multi-year compound from enterprise AI distribution is hard to find anywhere else at this scale.
 
-### 3. LLY — Eli Lilly · *High conviction · Long horizon*
+### 3. LLY — Eli Lilly · _High conviction · Long horizon_
 
 Manufacturing ramp is starting to ease the supply constraints that capped revenue, and the orforglipron oral readouts are setting up to extend the franchise. Still our preferred way to own the cardiometabolic supercycle.
 
-### 4. JPM — JPMorgan · *Medium conviction · Medium horizon*
+### 4. JPM — JPMorgan · _Medium conviction · Medium horizon_
 
 Best-run bank in America heading into a potential deal-making cycle. Trading and IB stand to benefit from elevated volatility and a thaw in M&A. Capital-return optionality is significant.
 
-### 5. SHOP — Shopify · *Medium conviction · Medium horizon*
+### 5. SHOP — Shopify · _Medium conviction · Medium horizon_
 
 Operating margins re-expanding, Shop Pay and Capital lifting take rate, and enterprise GMV mix improving. Canadian flagship tech name with a clean post-restructuring story.
 
-### 6. COST — Costco · *Medium conviction · Long horizon*
+### 6. COST — Costco · _Medium conviction · Long horizon_
 
 Membership renewal staying above 90% with traffic accelerating in trade-down conditions. The flywheel is doing the work it always does — quietly compounding.
 
-### 7. AAPL — Apple · *Medium conviction · Long horizon*
+### 7. AAPL — Apple · _Medium conviction · Long horizon_
 
 Services growth continues to do the heavy lifting on revenue mix and margins. We're not paying for an iPhone refresh — we're paying for the most valuable installed base in tech.
 
-### 8. CNQ — Canadian Natural Resources · *Medium conviction · Medium horizon*
+### 8. CNQ — Canadian Natural Resources · _Medium conviction · Medium horizon_
 
 Cleanest large-cap energy name on the TSX with the lowest break-even and clearest capital allocation framework. Pays you to wait while WTI does whatever WTI does.
 
-### 9. RY — Royal Bank of Canada · *Medium conviction · Long horizon*
+### 9. RY — Royal Bank of Canada · _Medium conviction · Long horizon_
 
 Defensive Canadian compounder with the wealth management franchise carrying growth and HSBC Canada synergies still to come. The dividend keeps marching higher.
 
-### 10. ENB — Enbridge · *Low conviction · Long horizon*
+### 10. ENB — Enbridge · _Low conviction · Long horizon_
 
 Pipeline backbone with utility-like cash flows and an industry-leading yield. The US gas utilities additions are starting to contribute to rate-base growth. Lower conviction this week — leverage is still elevated and rate sensitivity is real.
 
@@ -98,8 +98,8 @@ If a friend forwarded this to you, [subscribe here](https://alphabeat.io/) so yo
 
 Stay sharp.
 
-— *The Editor, AlphaBeat*
+— _The Editor, AlphaBeat_
 
 ---
 
-*AlphaBeat is an educational publication. Nothing here is investment advice or a recommendation to buy, sell, or hold any security. Always do your own research and consult a qualified financial professional. Past performance does not predict future results.*
+_AlphaBeat is an educational publication. Nothing here is investment advice or a recommendation to buy, sell, or hold any security. Always do your own research and consult a qualified financial professional. Past performance does not predict future results._

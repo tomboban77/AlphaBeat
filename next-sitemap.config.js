@@ -19,6 +19,7 @@ module.exports = {
     // Boost priority of money pages
     let priority = config.priority;
     if (path === "/") priority = 1.0;
+    else if (path === "/subscribe" || path === "/newsletter") priority = 0.97;
     else if (path === "/hidden-gems" || path.startsWith("/weekly-picks")) priority = 0.95;
     else if (path.startsWith("/top")) priority = 0.9;
     else if (path.startsWith("/stocks/") || path.startsWith("/etfs/")) priority = 0.9;

@@ -32,6 +32,7 @@ import { urlFor } from "@/lib/sanity/image";
 import { formatDate, formatRelativeWeek } from "@/lib/utils";
 import { getCandles, getQuote, getQuotes } from "@/lib/market/finnhub";
 import { normalizeFinnhubSymbol } from "@/lib/market/symbols";
+import { listPublishedPosts } from "@/lib/newsletter/beehiiv-posts";
 
 import SectionHeading from "@/components/ui/SectionHeading";
 import StockCard from "@/components/stocks/StockCard";
@@ -44,18 +45,21 @@ import NewsletterCTA from "@/components/newsletter/NewsletterCTA";
 export const revalidate = 600;
 
 async function getCmsData() {
-  const [featured, weekly, insights, gems, topLists] = await Promise.all([
-    client.fetch<Stock | null>(featuredStockQuery).catch(() => null),
-    client.fetch<WeeklyPick | null>(latestWeeklyPickQuery).catch(() => null),
-    client.fetch<Insight[]>(latestInsightsQuery, { limit: 6 }).catch(() => []),
-    client.fetch<Stock[]>(featuredHiddenGemsQuery).catch(() => []),
-    client.fetch<TopList[]>(allTopListsQuery).catch(() => []),
-  ]);
-  return { featured, weekly, insights, gems, topLists };
+  const [featured, weekly, insights, gems, topLists, newsletterPosts] =
+    await Promise.all([
+      client.fetch<Stock | null>(featuredStockQuery).catch(() => null),
+      client.fetch<WeeklyPick | null>(latestWeeklyPickQuery).catch(() => null),
+      client.fetch<Insight[]>(latestInsightsQuery, { limit: 6 }).catch(() => []),
+      client.fetch<Stock[]>(featuredHiddenGemsQuery).catch(() => []),
+      client.fetch<TopList[]>(allTopListsQuery).catch(() => []),
+      listPublishedPosts({ limit: 3 }).catch(() => []),
+    ]);
+  return { featured, weekly, insights, gems, topLists, newsletterPosts };
 }
 
 export default async function HomePage() {
-  const { featured, weekly, insights, gems, topLists } = await getCmsData();
+  const { featured, weekly, insights, gems, topLists, newsletterPosts } =
+    await getCmsData();
 
   const featuredQuote = featured ? await getQuote(featured.ticker) : null;
   const featuredCandles = featured ? await getCandles(featured.ticker, "1M") : [];
@@ -103,22 +107,25 @@ export default async function HomePage() {
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
-              href="/weekly-picks"
+              href="/subscribe"
               className="inline-flex items-center justify-center gap-2 rounded-full bg-accent-500 px-6 py-3 text-sm font-semibold text-ink-950 shadow-lg shadow-accent-500/30 transition-all hover:bg-accent-400 hover:shadow-accent-500/50"
             >
-              See this week&rsquo;s Top 10
+              Get the weekly Top 10
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
-              href="/hidden-gems"
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-violet-500/40 bg-violet-500/10 px-6 py-3 text-sm font-semibold text-violet-200 transition-all hover:border-violet-400 hover:bg-violet-500/20"
+              href="/weekly-picks"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-ink-600 bg-ink-800 px-6 py-3 text-sm font-semibold text-ash-100 transition-all hover:border-ink-500"
             >
-              <Gem className="h-4 w-4" />
-              Browse Hidden Gems
+              Read this week&rsquo;s picks
             </Link>
           </div>
 
           <ul className="mx-auto mt-10 flex max-w-3xl flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-ash-400">
+            <li className="inline-flex items-center gap-1.5">
+              <Check className="h-3.5 w-3.5 text-up-400" />
+              Free Sundays. No spam.
+            </li>
             <li className="inline-flex items-center gap-1.5">
               <Check className="h-3.5 w-3.5 text-up-400" />
               Bull and bear case for every stock
@@ -126,10 +133,6 @@ export default async function HomePage() {
             <li className="inline-flex items-center gap-1.5">
               <Check className="h-3.5 w-3.5 text-up-400" />
               Live US &amp; Canadian quotes
-            </li>
-            <li className="inline-flex items-center gap-1.5">
-              <Check className="h-3.5 w-3.5 text-up-400" />
-              Free forever, no account needed
             </li>
           </ul>
         </div>
@@ -465,10 +468,73 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* ============================================== NEWSLETTER BANNER */}
+      {/* ============================================== NEWSLETTER + ARCHIVE */}
       <section className="border-b border-ink-800 bg-ink-950">
-        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
           <NewsletterCTA source="home-banner" variant="banner" />
+
+          {newsletterPosts.length > 0 && (
+            <div className="mt-10">
+              <div className="mb-4 flex items-end justify-between">
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-400">
+                    Recent issues
+                  </div>
+                  <h3 className="mt-1 text-xl font-bold tracking-tight text-ash-50">
+                    Read before you subscribe.
+                  </h3>
+                </div>
+                <Link
+                  href="/newsletter"
+                  className="group inline-flex items-center gap-1 text-sm font-semibold text-accent-300 transition-colors hover:text-accent-200"
+                >
+                  All issues
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                </Link>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {newsletterPosts.map((post, idx) => {
+                  const date = post.publish_date
+                    ? new Date(post.publish_date * 1000).toLocaleDateString(
+                        "en-US",
+                        {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        }
+                      )
+                    : "";
+                  const issueNumber = newsletterPosts.length - idx;
+                  return (
+                    <a
+                      key={post.id}
+                      href={post.web_url || "#"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group flex flex-col rounded-2xl border border-ink-700 bg-ink-800/40 p-5 transition-all hover:border-accent-500/40 hover:bg-ink-800/60"
+                    >
+                      <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider">
+                        <span className="rounded-full bg-accent-500/10 px-2 py-0.5 text-accent-300 ring-1 ring-inset ring-accent-500/30">
+                          Issue #{issueNumber}
+                        </span>
+                        {date && (
+                          <span className="text-ash-500">{date}</span>
+                        )}
+                      </div>
+                      <h4 className="mt-3 line-clamp-2 text-base font-bold text-ash-50 group-hover:text-accent-200">
+                        {post.title}
+                      </h4>
+                      {post.subtitle && (
+                        <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-ash-400">
+                          {post.subtitle}
+                        </p>
+                      )}
+                    </a>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

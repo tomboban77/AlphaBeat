@@ -24,6 +24,8 @@ const groups = [
   {
     title: "Read",
     links: [
+      { name: "Newsletter archive", href: "/newsletter" },
+      { name: "Subscribe", href: "/subscribe" },
       { name: "Insights", href: "/insights" },
       { name: "About", href: "/about" },
       { name: "Sponsor your ticker", href: "/sponsor" },

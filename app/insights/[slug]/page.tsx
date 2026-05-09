@@ -21,6 +21,7 @@ import Breadcrumb from "@/components/ui/Breadcrumb";
 import PortableProse from "@/components/portable/PortableProse";
 import SectorBadge from "@/components/sectors/SectorBadge";
 import Disclaimer from "@/components/ui/Disclaimer";
+import NewsletterCTA from "@/components/newsletter/NewsletterCTA";
 
 export const revalidate = 600;
 
@@ -233,6 +234,16 @@ export default async function InsightPage({ params }: InsightPageProps) {
             ))}
           </div>
         )}
+
+        <div className="mt-10">
+          <NewsletterCTA
+            source={`insight-${insight.slug.current}`}
+            variant="card"
+            eyebrow="Liked this read?"
+            title="Get the next one in your inbox."
+            description="One email every Sunday with the editor's Top 10 stocks for the week, plus our latest insights. Free, no spam."
+          />
+        </div>
 
         <div className="mt-10">
           <Disclaimer variant="block" />

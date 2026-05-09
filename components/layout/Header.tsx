@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Menu, Search, Star, X } from "lucide-react";
+import { Mail, Menu, Search, Star, X } from "lucide-react";
 import Logo from "./Logo";
 import CommandPalette from "./CommandPalette";
 import { useWatchlist } from "@/lib/watchlist";
@@ -13,9 +13,9 @@ const NAV = [
   { name: "Top 10", href: "/weekly-picks" },
   { name: "Hidden Gems", href: "/hidden-gems" },
   { name: "By Sector", href: "/top" },
-  { name: "Featured", href: "/stocks" },
   { name: "ETFs", href: "/etfs" },
   { name: "Insights", href: "/insights" },
+  { name: "Newsletter", href: "/newsletter" },
 ];
 
 export default function Header() {
@@ -113,6 +113,14 @@ export default function Header() {
               )}
             </Link>
 
+            <Link
+              href="/subscribe"
+              className="hidden h-9 items-center justify-center gap-1.5 rounded-md bg-accent-500 px-3 text-sm font-semibold text-ink-950 transition-colors hover:bg-accent-400 lg:inline-flex"
+            >
+              <Mail className="h-4 w-4" />
+              Subscribe
+            </Link>
+
             <button
               type="button"
               className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-ink-600 bg-ink-800/80 text-ash-300 hover:text-ash-50 md:hidden"
@@ -143,9 +151,17 @@ export default function Header() {
                 </Link>
               ))}
               <Link
+                href="/subscribe"
+                onClick={closeMobile}
+                className="mt-1 inline-flex items-center justify-center gap-1.5 rounded-md bg-accent-500 px-3 py-2 text-sm font-semibold text-ink-950"
+              >
+                <Mail className="h-4 w-4" />
+                Subscribe to the newsletter
+              </Link>
+              <Link
                 href="/sponsor"
                 onClick={closeMobile}
-                className="mt-1 rounded-md border border-warn-500/40 bg-warn-500/10 px-3 py-2 text-sm font-medium text-warn-200"
+                className="rounded-md border border-warn-500/40 bg-warn-500/10 px-3 py-2 text-sm font-medium text-warn-200"
               >
                 Sponsor your ticker
               </Link>
