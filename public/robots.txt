@@ -1,0 +1,11 @@
+# *
+User-agent: *
+Allow: /
+Disallow: /api
+Disallow: /studio
+
+# Host
+Host: https://maplewealth.ca
+
+# Sitemaps
+Sitemap: https://maplewealth.ca/sitemap.xml
