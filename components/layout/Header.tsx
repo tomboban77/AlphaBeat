@@ -10,6 +10,7 @@ import { useWatchlist } from "@/lib/watchlist";
 import { cn } from "@/lib/utils";
 
 const NAV = [
+  { name: "Pulse", href: "/pulse" },
   { name: "Top 10", href: "/weekly-picks" },
   { name: "Hidden Gems", href: "/hidden-gems" },
   { name: "ETFs", href: "/etfs" },

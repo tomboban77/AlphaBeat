@@ -18,7 +18,12 @@ module.exports = {
   transform: async (config, path) => {
     // Boost priority of money pages
     let priority = config.priority;
+    let changefreq = config.changefreq;
     if (path === "/") priority = 1.0;
+    else if (path === "/pulse") {
+      priority = 0.98;
+      changefreq = "hourly";
+    }
     else if (path === "/subscribe" || path === "/newsletter") priority = 0.97;
     else if (path === "/hidden-gems" || path.startsWith("/weekly-picks")) priority = 0.95;
     else if (path.startsWith("/top")) priority = 0.9;
@@ -32,7 +37,7 @@ module.exports = {
       priority = 0.85;
     return {
       loc: path,
-      changefreq: config.changefreq,
+      changefreq,
       priority,
       lastmod: new Date().toISOString(),
     };

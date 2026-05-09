@@ -11,7 +11,7 @@ interface WebhookPayload {
 /**
  * Sanity webhook receiver. Configure in Sanity → API → Webhooks:
  *   URL: https://yourdomain.com/api/revalidate
- *   Filter: _type in ["stock","etfEntry","sector","weeklyPick","insight","sponsorship","siteSettings"]
+ *   Filter: _type in ["stock","etfEntry","sector","weeklyPick","insight","marketNote","sponsorship","siteSettings"]
  *   Header: x-revalidation-secret: <REVALIDATION_SECRET>
  */
 export async function POST(request: NextRequest) {
@@ -71,6 +71,12 @@ export async function POST(request: NextRequest) {
     case "insight": {
       revalidatePath("/insights");
       if (slugCurrent) revalidatePath(`/insights/${slugCurrent}`);
+      break;
+    }
+    case "marketNote": {
+      // Pulse + homepage both surface the latest note.
+      revalidatePath("/pulse");
+      revalidatePath("/");
       break;
     }
     case "sponsorship":

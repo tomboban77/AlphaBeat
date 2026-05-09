@@ -1,23 +1,26 @@
 import {
-  Activity, Atom, Banknote, Battery, Bitcoin, Bolt, Building2, Car,
-  Cpu, Cross, DollarSign, Drama, Factory, Flame, Gem, Globe, GraduationCap,
-  Hammer, HeartPulse, Home, Laptop, Leaf, Microscope, Moon, Pill,
-  Plane, Pickaxe, Rocket, ShieldCheck, ShoppingBag, Stethoscope, Sun,
-  Tractor, Tv, TrendingUp, Trees, Truck, Wrench, Wifi, Zap,
+  Activity, Atom, Banknote, Battery, Bitcoin, Bolt, Building, Building2, Car,
+  Cpu, Cross, DollarSign, Drama, Factory, Flame, Fuel, Gem, Globe,
+  GraduationCap, Hammer, HeartPulse, Home, Landmark, Laptop, Leaf,
+  Microscope, Moon, Pill, Plane, Pickaxe, Radio, Rocket, ShieldCheck,
+  ShoppingBag, ShoppingCart, Stethoscope, Sun, Tractor, Tv, TrendingUp,
+  Trees, Truck, Wrench, Wifi, Zap,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 const ICONS: Record<string, LucideIcon> = {
   activity: Activity, atom: Atom, banknote: Banknote, battery: Battery,
-  bitcoin: Bitcoin, bolt: Bolt, building2: Building2, car: Car, cpu: Cpu,
-  cross: Cross, "dollar-sign": DollarSign, drama: Drama, factory: Factory,
-  flame: Flame, gem: Gem, globe: Globe, "graduation-cap": GraduationCap,
-  hammer: Hammer, "heart-pulse": HeartPulse, home: Home, laptop: Laptop,
-  leaf: Leaf, microscope: Microscope, moon: Moon, pill: Pill, plane: Plane,
-  pickaxe: Pickaxe, rocket: Rocket, "shield-check": ShieldCheck,
-  "shopping-bag": ShoppingBag, stethoscope: Stethoscope, sun: Sun,
-  tractor: Tractor, tv: Tv, "trending-up": TrendingUp, trees: Trees,
-  truck: Truck, wrench: Wrench, wifi: Wifi, zap: Zap,
+  bitcoin: Bitcoin, bolt: Bolt, building: Building, building2: Building2,
+  car: Car, cpu: Cpu, cross: Cross, "dollar-sign": DollarSign, drama: Drama,
+  factory: Factory, flame: Flame, fuel: Fuel, gem: Gem, globe: Globe,
+  "graduation-cap": GraduationCap, hammer: Hammer, "heart-pulse": HeartPulse,
+  home: Home, landmark: Landmark, laptop: Laptop, leaf: Leaf,
+  microscope: Microscope, moon: Moon, pill: Pill, plane: Plane,
+  pickaxe: Pickaxe, radio: Radio, rocket: Rocket, "shield-check": ShieldCheck,
+  "shopping-bag": ShoppingBag, "shopping-cart": ShoppingCart,
+  stethoscope: Stethoscope, sun: Sun, tractor: Tractor, tv: Tv,
+  "trending-up": TrendingUp, trees: Trees, truck: Truck, wrench: Wrench,
+  wifi: Wifi, zap: Zap,
 };
 
 interface SectorIconProps {

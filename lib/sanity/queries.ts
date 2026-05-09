@@ -317,6 +317,34 @@ export const insightsBySectorQuery = groq`
 `;
 
 // ============================================================================
+// Market notes (daily editorial pulse)
+// ============================================================================
+
+const marketNoteFields = groq`
+  _id, title, summary, publishedAt, regime, themes, body, pinned,
+  "author": author->{name, slug, image, credentials},
+  "sectorReads": sectorReads[]{
+    _key, direction, rationale,
+    "sector": sector->{_id, title, slug, accent, icon}
+  },
+  "stockMentions": stockMentions[]->{
+    _id, ticker, name, slug,
+    "sector": sector->{_id, title, slug, accent, icon}
+  }
+`;
+
+/**
+ * Latest market note. Used by /pulse and the homepage widget.
+ * Returns the most recent, regardless of age \u2014 the consumer decides
+ * whether it's "fresh enough" using publishedAt (typically 24h window,
+ * unless `pinned` is true).
+ */
+export const latestMarketNoteQuery = groq`
+  *[_type == "marketNote" && defined(publishedAt)]
+  | order(publishedAt desc)[0] { ${marketNoteFields} }
+`;
+
+// ============================================================================
 // Sponsorships
 // ============================================================================
 

@@ -221,6 +221,65 @@ export async function getCompanyProfile(
 }
 
 // ---------------------------------------------------------------------------
+// Market news
+// ---------------------------------------------------------------------------
+
+interface FinnhubNewsItem {
+  category?: string;
+  datetime: number;
+  headline: string;
+  id: number;
+  image?: string;
+  related?: string;
+  source?: string;
+  summary?: string;
+  url: string;
+}
+
+export interface MarketNewsItem {
+  id: number;
+  headline: string;
+  source?: string;
+  summary?: string;
+  url: string;
+  image?: string;
+  related?: string;
+  category?: string;
+  publishedAt: number; // unix seconds
+}
+
+export type NewsCategory = "general" | "forex" | "crypto" | "merger";
+
+/**
+ * Fetch latest market news. Cache: 10 minutes.
+ *
+ * Free-tier note: Finnhub's news endpoints are open on free tier with the
+ * usual 60 req/min ceiling. We cache aggressively because news doesn't move
+ * second-by-second on the surfaces we render.
+ */
+export async function getMarketNews(
+  category: NewsCategory = "general",
+  limit = 12
+): Promise<MarketNewsItem[]> {
+  const data = await fhFetch<FinnhubNewsItem[]>(
+    `/news?category=${encodeURIComponent(category)}`,
+    60 * 10
+  );
+  if (!Array.isArray(data)) return mockNews(limit);
+  return data.slice(0, limit).map((n) => ({
+    id: n.id,
+    headline: n.headline,
+    source: n.source,
+    summary: n.summary,
+    url: n.url,
+    image: n.image,
+    related: n.related,
+    category: n.category,
+    publishedAt: n.datetime,
+  }));
+}
+
+// ---------------------------------------------------------------------------
 // Search
 // ---------------------------------------------------------------------------
 
@@ -294,6 +353,55 @@ function mockQuote(symbol: string, currency: string, stale: boolean): MarketQuot
     currency,
     stale,
   };
+}
+
+function mockNews(limit: number): MarketNewsItem[] {
+  const now = Math.floor(Date.now() / 1000);
+  const seeds: Array<Pick<MarketNewsItem, "headline" | "source" | "summary" | "url">> = [
+    {
+      headline: "Markets churn as investors weigh fresh inflation data",
+      source: "AlphaBeat newsroom",
+      summary:
+        "Equity benchmarks traded sideways as cooler-than-expected price data was offset by hawkish commentary from regional Fed officials.",
+      url: "https://alphabeat.io/insights",
+    },
+    {
+      headline: "AI capex remains the dominant earnings story",
+      source: "AlphaBeat newsroom",
+      summary:
+        "Mega-cap guidance pointed to another year of double-digit data-center spending, even as some analysts question return on investment.",
+      url: "https://alphabeat.io/insights",
+    },
+    {
+      headline: "Crude eases as supply concerns dim",
+      source: "AlphaBeat newsroom",
+      summary:
+        "Energy traders trimmed long positions as inventory builds and softer Asian demand weighed on near-term sentiment.",
+      url: "https://alphabeat.io/insights",
+    },
+    {
+      headline: "Canadian banks set to report into a softer macro backdrop",
+      source: "AlphaBeat newsroom",
+      summary:
+        "Mortgage delinquencies and PCL provisions remain the key debate points heading into Q4 reporting on Bay Street.",
+      url: "https://alphabeat.io/insights",
+    },
+    {
+      headline: "Gold flirts with all-time highs on real-rate easing",
+      source: "AlphaBeat newsroom",
+      summary:
+        "Bullion ETFs continued to attract inflows as the long end of the curve rallied alongside softer inflation expectations.",
+      url: "https://alphabeat.io/insights",
+    },
+  ];
+  return seeds.slice(0, limit).map((s, i) => ({
+    id: 1000 + i,
+    publishedAt: now - i * 1800,
+    related: "",
+    category: "general",
+    image: undefined,
+    ...s,
+  }));
 }
 
 function mockCandles(symbol: string, range: CandleRange): CandlePoint[] {

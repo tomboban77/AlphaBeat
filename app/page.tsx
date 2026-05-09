@@ -45,6 +45,7 @@ import InsightCard from "@/components/insights/InsightCard";
 import SectorIcon, { ACCENT_RING } from "@/components/sectors/SectorIcon";
 import Disclaimer from "@/components/ui/Disclaimer";
 import NewsletterCTA from "@/components/newsletter/NewsletterCTA";
+import MarketPulseWidget from "@/components/pulse/MarketPulseWidget";
 
 export const revalidate = 600;
 
@@ -139,6 +140,13 @@ export default async function HomePage() {
               Live US &amp; Canadian quotes
             </li>
           </ul>
+        </div>
+      </section>
+
+      {/* ===================================================== MARKET PULSE WIDGET */}
+      <section className="border-b border-ink-800">
+        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+          <MarketPulseWidget />
         </div>
       </section>
 

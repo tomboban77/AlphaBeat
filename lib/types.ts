@@ -318,6 +318,37 @@ export interface Insight {
 }
 
 // ============================================================================
+// Market Note (daily editorial)
+// ============================================================================
+
+export type MarketRegime = "risk-on" | "mixed" | "risk-off" | "auto";
+export type SectorDirection = "tailwind" | "headwind" | "neutral";
+
+export interface SectorRead {
+  _key?: string;
+  direction: SectorDirection;
+  rationale: string;
+  sector: Pick<Sector, "_id" | "title" | "slug" | "accent" | "icon">;
+}
+
+export interface MarketNote {
+  _id: string;
+  title: string;
+  summary: string;
+  publishedAt: string;
+  regime: MarketRegime;
+  themes?: string[];
+  body?: SanityBodyBlock[];
+  sectorReads?: SectorRead[];
+  stockMentions?: Pick<
+    Stock,
+    "_id" | "ticker" | "name" | "slug" | "sector"
+  >[];
+  author?: Author;
+  pinned?: boolean;
+}
+
+// ============================================================================
 // Market data (Finnhub-shaped, normalized)
 // ============================================================================
 
