@@ -12,9 +12,9 @@ interface NewsletterCTAProps {
   className?: string;
 }
 
-const DEFAULT_TITLE = "The weekly Top 10, in your inbox.";
+const DEFAULT_TITLE = "Get the Top 10 a week before the web.";
 const DEFAULT_DESC =
-  "One email every Sunday: the editor's 10 highest-conviction stocks for the week, with thesis and risk score. No spam, ever.";
+  "Subscribers get the full Top 10 every Sunday at 8pm ET, before Monday's open. The web archive shows picks 1-3 in full and unlocks the rest seven days later. Free.";
 
 export default function NewsletterCTA({
   source,
@@ -71,8 +71,9 @@ export default function NewsletterCTA({
             </h2>
             <p className="mt-2 max-w-xl text-ash-300">{description}</p>
             <ul className="mt-4 space-y-1.5 text-sm text-ash-400">
-              <li>• Weekly Top 10 stock picks with thesis &amp; risk</li>
-              <li>• Hidden Gems alerts when new sub-$20 ideas land</li>
+              <li>• Full Top 10 thesis, 7 days before the web</li>
+              <li>• Same-day Hidden Gem alerts on sub-$20 ideas</li>
+              <li>• &ldquo;What I&rsquo;m Watching&rdquo; macro read &mdash; email-only</li>
               <li>• Unsubscribe in one click. No filler.</li>
             </ul>
           </div>

@@ -8,7 +8,6 @@ import {
   Clock,
   Compass,
   Eye,
-  Gem,
   Mail,
   MessageCircle,
   ShieldCheck,
@@ -60,14 +59,15 @@ export default async function SubscribePage() {
           <h1 className="mt-5 text-balance text-4xl font-bold tracking-tight text-ash-50 sm:text-5xl lg:text-6xl">
             Ten stocks.{" "}
             <span className="bg-gradient-to-r from-accent-300 via-accent-400 to-violet-400 bg-clip-text text-transparent">
-              Every Sunday.
+              A week early.
             </span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-balance text-base leading-relaxed text-ash-300 sm:text-lg">
-            One email a week with the editor&rsquo;s top ten stocks for the week
-            ahead — ranked by conviction, with thesis, time horizon, and what
-            could break each trade. Read it Sunday night, position size on
-            Monday morning.
+            Every Sunday at 8pm ET we email subscribers the full Top 10 &mdash;
+            ten stocks ranked by conviction, with thesis, time horizon, and
+            bear case. The web archive shows picks 1&ndash;3 in full and
+            unlocks the rest seven days later. Subscribers always read the
+            week ahead before the web does.
           </p>
           <div className="mx-auto mt-8 max-w-md">
             <NewsletterForm source="subscribe-hero" ctaLabel="Subscribe — it's free" />
@@ -79,7 +79,7 @@ export default async function SubscribePage() {
           <ul className="mx-auto mt-10 flex max-w-3xl flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-ash-400">
             <li className="inline-flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-up-400" />
-              No spam, ever
+              7-day head start vs. the web
             </li>
             <li className="inline-flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-up-400" />
@@ -154,18 +154,18 @@ export default async function SubscribePage() {
           <div className="grid gap-5 lg:grid-cols-2">
             <Benefit
               icon={<CalendarClock className="h-5 w-5 text-accent-300" />}
-              title="Sunday 8pm ET delivery"
-              body="Issues land in your inbox Sunday night. The web archive updates Monday morning. Subscribers get a twelve-hour head start before the open."
-            />
-            <Benefit
-              icon={<BellRing className="h-5 w-5 text-fuchsia-300" />}
-              title="Same-day Hidden Gem alerts"
-              body="When a new sub-$20 idea is published, subscribers get a one-line email the same day. Web visitors find it on their next visit."
+              title="A 7-day head start on every issue"
+              body={`The full Top 10 lands in your inbox Sunday at 8pm ET. The web archive only shows picks 1\u20133 until the issue ages out a week later. You read the thesis the moment it\u2019s called.`}
             />
             <Benefit
               icon={<Eye className="h-5 w-5 text-warn-300" />}
               title="The What I'm Watching read"
-              body="A short editor's note on macro signals, sector rotations, and the names that almost made the list. In the email only, not on the site."
+              body="A short editor's note on macro signals, sector rotations, and three honourable mentions that almost made the cut. In the email only, never on the site."
+            />
+            <Benefit
+              icon={<BellRing className="h-5 w-5 text-fuchsia-300" />}
+              title="Same-day Hidden Gem alerts"
+              body="When a new sub-$20 idea is published, subscribers get a one-line email that day. Web visitors find it on their next visit."
             />
             <Benefit
               icon={<MessageCircle className="h-5 w-5 text-violet-300" />}
@@ -277,13 +277,13 @@ export default async function SubscribePage() {
               We&rsquo;ll send a quick welcome explaining the format and what
               to expect.
             </Step>
-            <Step n={3} title="Sundays at 8pm ET">
-              The Top 10 lands in your inbox every Sunday evening, before
-              Monday&rsquo;s open.
+            <Step n={3} title="Sunday 8pm ET, every week">
+              The full Top 10 hits your inbox before Monday&rsquo;s open.
+              You&rsquo;re reading what the web won&rsquo;t see for a week.
             </Step>
             <Step n={4} title="Read. Decide. Act.">
-              Five-minute read. Opinionated. Bull and bear case for every name.
-              You decide what fits your portfolio.
+              Five-minute read. Bull and bear case for every name. You decide
+              what fits your portfolio &mdash; with a clear time advantage.
             </Step>
           </ol>
         </div>
@@ -375,6 +375,16 @@ export default async function SubscribePage() {
               Yes. The newsletter and the entire site are free. We may run
               clearly-labeled sponsored content from listed companies in the
               future, but it will never replace the editor&rsquo;s top picks.
+            </Faq>
+            <Faq q="What's gated behind the newsletter, exactly?">
+              For each new issue, the web shows the editor&rsquo;s
+              market-read intro and picks 1&ndash;3 in full. Picks
+              4&ndash;10, the full thesis text, the &ldquo;What I&rsquo;m
+              Watching&rdquo; macro note, and three honourable mentions are
+              email-only for seven days. After seven days the issue unlocks
+              publicly &mdash; and the next subscriber-exclusive issue
+              ships. Hidden Gem ideas under $20 also get a same-day email
+              alert; the web archive page surfaces them on your next visit.
             </Faq>
             <Faq q="Is this investment advice?">
               No. AlphaBeat is an educational publication. Nothing we write is

@@ -33,6 +33,10 @@ import { formatDate, formatRelativeWeek } from "@/lib/utils";
 import { getCandles, getQuote, getQuotes } from "@/lib/market/finnhub";
 import { normalizeFinnhubSymbol } from "@/lib/market/symbols";
 import { listPublishedPosts } from "@/lib/newsletter/beehiiv-posts";
+import {
+  formatUnlockLabel,
+  isExclusiveIssue,
+} from "@/lib/newsletter/exclusive";
 
 import SectionHeading from "@/components/ui/SectionHeading";
 import StockCard from "@/components/stocks/StockCard";
@@ -124,7 +128,7 @@ export default async function HomePage() {
           <ul className="mx-auto mt-10 flex max-w-3xl flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-ash-400">
             <li className="inline-flex items-center gap-1.5">
               <Check className="h-3.5 w-3.5 text-up-400" />
-              Free Sundays. No spam.
+              Subscribers read picks 7 days early
             </li>
             <li className="inline-flex items-center gap-1.5">
               <Check className="h-3.5 w-3.5 text-up-400" />
@@ -157,7 +161,7 @@ export default async function HomePage() {
             <HowStep
               n="01"
               title="Tell me what to watch this week"
-              body="The Weekly Top 10. Ten stocks ranked by the editor's conviction, with thesis, time horizon, and a stated bear case. New issue every Sunday night."
+              body="The Weekly Top 10. Ten stocks ranked by conviction, with thesis, horizon, and bear case. Newsletter subscribers get the full issue Sunday at 8pm ET; the web archive shows picks 1-3 in full and unlocks the rest seven days later."
               href="/weekly-picks"
               linkLabel="Read this week's Top 10"
             />
@@ -194,9 +198,9 @@ export default async function HomePage() {
             <ValuePropCard
               icon={<Trophy className="h-5 w-5 text-accent-300" />}
               title="The Weekly Top 10"
-              body="Ten stocks ranked by conviction, with thesis and time horizon. Published every Sunday night, before Monday's open."
-              href="/weekly-picks"
-              linkLabel="See this week's list"
+              body="Ten stocks ranked by conviction, with thesis and horizon. Subscribers get the full issue Sunday at 8pm ET; the web archive lags by a week."
+              href="/subscribe"
+              linkLabel="Get it Sunday night"
             />
             <ValuePropCard
               icon={<Gem className="h-5 w-5 text-violet-300" />}
@@ -227,74 +231,95 @@ export default async function HomePage() {
       </section>
 
       {/* ============================================== WEEKLY PICK FEATURE */}
-      {weekly ? (
-        <section className="border-b border-ink-800">
-          <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-            <SectionHeading
-              eyebrow="The flagship product"
-              title="This week's Top 10"
-              description="Editor-curated stocks worth your attention this week — with thesis, conviction, and time horizon for each."
-              href="/weekly-picks"
-              hrefLabel="Read all 10 picks"
-            />
-
-            <Link
-              href={`/weekly-picks/${weekly.slug.current}`}
-              className="group relative mt-6 grid overflow-hidden rounded-2xl border border-accent-500/30 bg-gradient-to-br from-ink-800 via-ink-900 to-accent-950 transition-all hover:border-accent-500/60 hover:shadow-2xl hover:shadow-accent-500/10 sm:grid-cols-2"
-            >
-              <div className="relative aspect-[16/10] sm:aspect-auto">
-                {weekly.heroImage?.asset ? (
-                  <Image
-                    src={urlFor(weekly.heroImage).width(900).height(600).url()}
-                    alt={weekly.title}
-                    fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
-                    sizes="(max-width: 640px) 100vw, 50vw"
+      {weekly
+        ? (() => {
+            const weeklyExclusive = isExclusiveIssue(weekly.weekOf);
+            const weeklyUnlock = formatUnlockLabel(weekly.weekOf);
+            return (
+              <section className="border-b border-ink-800">
+                <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+                  <SectionHeading
+                    eyebrow="The flagship product"
+                    title="This week's Top 10"
+                    description={
+                      weeklyExclusive
+                        ? `Live in subscribers' inboxes now. Picks 1\u20133 are open on the web; the rest unlock ${weeklyUnlock || "in 7 days"}.`
+                        : "Editor-curated stocks worth your attention this week, with thesis, conviction, and time horizon."
+                    }
+                    href="/weekly-picks"
+                    hrefLabel="Read all 10 picks"
                   />
-                ) : (
-                  <div className="flex h-full items-center justify-center bg-gradient-to-br from-ink-700 to-accent-900">
-                    <span className="text-7xl font-black tracking-tighter text-accent-300/40">
-                      α
-                    </span>
-                  </div>
-                )}
-              </div>
-              <div className="flex flex-col justify-center gap-4 p-6 sm:p-10">
-                <div className="flex flex-wrap items-center gap-2 text-xs">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-accent-500/15 px-2.5 py-1 font-semibold uppercase tracking-wider text-accent-300 ring-1 ring-inset ring-accent-500/30">
-                    <Sparkles className="h-3 w-3" />
-                    {formatRelativeWeek(weekly.weekOf)}
-                  </span>
-                  <span className="text-ash-400">{formatDate(weekly.weekOf)}</span>
-                  {weekly.author?.name && (
-                    <span className="text-ash-500">· by {weekly.author.name}</span>
-                  )}
+
+                  <Link
+                    href={`/weekly-picks/${weekly.slug.current}`}
+                    className="group relative mt-6 grid overflow-hidden rounded-2xl border border-accent-500/30 bg-gradient-to-br from-ink-800 via-ink-900 to-accent-950 transition-all hover:border-accent-500/60 hover:shadow-2xl hover:shadow-accent-500/10 sm:grid-cols-2"
+                  >
+                    <div className="relative aspect-[16/10] sm:aspect-auto">
+                      {weekly.heroImage?.asset ? (
+                        <Image
+                          src={urlFor(weekly.heroImage).width(900).height(600).url()}
+                          alt={weekly.title}
+                          fill
+                          className="object-cover transition-transform duration-700 group-hover:scale-105"
+                          sizes="(max-width: 640px) 100vw, 50vw"
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center bg-gradient-to-br from-ink-700 to-accent-900">
+                          <span className="text-7xl font-black tracking-tighter text-accent-300/40">
+                            α
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex flex-col justify-center gap-4 p-6 sm:p-10">
+                      <div className="flex flex-wrap items-center gap-2 text-xs">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-accent-500/15 px-2.5 py-1 font-semibold uppercase tracking-wider text-accent-300 ring-1 ring-inset ring-accent-500/30">
+                          <Sparkles className="h-3 w-3" />
+                          {formatRelativeWeek(weekly.weekOf)}
+                        </span>
+                        {weeklyExclusive && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-up-500/10 px-2.5 py-1 font-semibold uppercase tracking-wider text-up-300 ring-1 ring-inset ring-up-500/30">
+                            Live in inboxes
+                          </span>
+                        )}
+                        <span className="text-ash-400">
+                          {formatDate(weekly.weekOf)}
+                        </span>
+                        {weekly.author?.name && (
+                          <span className="text-ash-500">
+                            · by {weekly.author.name}
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="text-2xl font-bold tracking-tight text-ash-50 sm:text-3xl">
+                        {weekly.title}
+                      </h3>
+                      {weekly.picks && weekly.picks.length > 0 && (
+                        <p className="text-sm text-ash-300">
+                          Featuring{" "}
+                          <span className="font-semibold text-ash-100">
+                            {weekly.picks
+                              .slice(0, 5)
+                              .map((p) => p.stock?.ticker)
+                              .filter(Boolean)
+                              .join(", ")}
+                          </span>{" "}
+                          and {Math.max(0, weekly.picks.length - 5)} more.
+                        </p>
+                      )}
+                      <span className="inline-flex items-center gap-1 text-sm font-semibold text-accent-300">
+                        {weeklyExclusive
+                          ? "Preview this week\u2019s picks"
+                          : "Read all picks"}
+                        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                      </span>
+                    </div>
+                  </Link>
                 </div>
-                <h3 className="text-2xl font-bold tracking-tight text-ash-50 sm:text-3xl">
-                  {weekly.title}
-                </h3>
-                {weekly.picks && weekly.picks.length > 0 && (
-                  <p className="text-sm text-ash-300">
-                    Featuring{" "}
-                    <span className="font-semibold text-ash-100">
-                      {weekly.picks
-                        .slice(0, 5)
-                        .map((p) => p.stock?.ticker)
-                        .filter(Boolean)
-                        .join(", ")}
-                    </span>{" "}
-                    and {Math.max(0, weekly.picks.length - 5)} more.
-                  </p>
-                )}
-                <span className="inline-flex items-center gap-1 text-sm font-semibold text-accent-300">
-                  Read all picks
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </span>
-              </div>
-            </Link>
-          </div>
-        </section>
-      ) : null}
+              </section>
+            );
+          })()
+        : null}
 
       {/* ===================================================== HIDDEN GEMS */}
       {gems.length > 0 && (

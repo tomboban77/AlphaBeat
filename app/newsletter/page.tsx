@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import Image from "next/image";
 import { ArrowUpRight, Mail, Clock, Sparkles } from "lucide-react";
 

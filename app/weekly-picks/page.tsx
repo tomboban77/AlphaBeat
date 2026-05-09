@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Lock } from "lucide-react";
 
 import { client } from "@/lib/sanity/client";
 import { weeklyPicksListQuery } from "@/lib/sanity/queries";
 import type { WeeklyPick } from "@/lib/types";
 import { absoluteUrl, formatDate, formatRelativeWeek } from "@/lib/utils";
 import { urlFor } from "@/lib/sanity/image";
+import {
+  formatUnlockLabel,
+  isExclusiveIssue,
+} from "@/lib/newsletter/exclusive";
 
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import Disclaimer from "@/components/ui/Disclaimer";
@@ -50,9 +54,16 @@ export default async function WeeklyPicksPage() {
         <p className="mt-3 text-ash-300">
           Ten stocks worth your attention this week, ranked by the
           editor&rsquo;s conviction. Every issue includes a thesis, a time
-          horizon, and a stated bear case for each name. New issue published
-          every Sunday night, before Monday&rsquo;s open.
+          horizon, and a stated bear case for each name.
         </p>
+        <div className="mt-4 flex items-start gap-2 rounded-xl border border-ink-700 bg-ink-800/60 p-3 text-sm text-ash-300">
+          <Lock className="mt-0.5 h-4 w-4 shrink-0 text-accent-300" />
+          <p>
+            Subscribers get the full Top 10 every Sunday at 8pm ET, before
+            Monday&rsquo;s open. The web archive shows picks 1&ndash;3 in full
+            and unlocks the rest seven days later.
+          </p>
+        </div>
       </header>
 
       {!latest ? (
@@ -71,61 +82,84 @@ export default async function WeeklyPicksPage() {
       ) : (
         <>
           {/* Latest — feature card */}
-          <Link
-            href={`/weekly-picks/${latest.slug.current}`}
-            className="group relative grid overflow-hidden rounded-2xl border border-accent-500/30 bg-gradient-to-br from-ink-800 via-ink-900 to-accent-950 transition-all hover:border-accent-500/60 hover:shadow-2xl hover:shadow-accent-500/10 sm:grid-cols-2"
-          >
-            <div className="relative aspect-[16/10] sm:aspect-auto">
-              {latest.heroImage?.asset ? (
-                <Image
-                  src={urlFor(latest.heroImage).width(900).height(600).url()}
-                  alt={latest.title}
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  priority
-                  sizes="(max-width: 640px) 100vw, 50vw"
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center bg-gradient-to-br from-ink-700 to-accent-900">
-                  <span className="text-7xl font-black tracking-tighter text-accent-300/40">
-                    α
+          {(() => {
+            const latestExclusive = isExclusiveIssue(latest.weekOf);
+            const latestUnlock = formatUnlockLabel(latest.weekOf);
+            return (
+              <Link
+                href={`/weekly-picks/${latest.slug.current}`}
+                className="group relative grid overflow-hidden rounded-2xl border border-accent-500/30 bg-gradient-to-br from-ink-800 via-ink-900 to-accent-950 transition-all hover:border-accent-500/60 hover:shadow-2xl hover:shadow-accent-500/10 sm:grid-cols-2"
+              >
+                <div className="relative aspect-[16/10] sm:aspect-auto">
+                  {latest.heroImage?.asset ? (
+                    <Image
+                      src={urlFor(latest.heroImage).width(900).height(600).url()}
+                      alt={latest.title}
+                      fill
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      priority
+                      sizes="(max-width: 640px) 100vw, 50vw"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center bg-gradient-to-br from-ink-700 to-accent-900">
+                      <span className="text-7xl font-black tracking-tighter text-accent-300/40">
+                        α
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-col justify-center gap-4 p-6 sm:p-10">
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-accent-500/15 px-2.5 py-1 font-semibold uppercase tracking-wider text-accent-300 ring-1 ring-inset ring-accent-500/30">
+                      Latest · {formatRelativeWeek(latest.weekOf)}
+                    </span>
+                    {latestExclusive && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-up-500/10 px-2.5 py-1 font-semibold uppercase tracking-wider text-up-300 ring-1 ring-inset ring-up-500/30">
+                        <Lock className="h-3 w-3" /> Live in inboxes
+                      </span>
+                    )}
+                    {latest.marketTone && TONE_LABEL[latest.marketTone] && (
+                      <span
+                        className={`inline-flex rounded-full px-2.5 py-1 font-semibold uppercase tracking-wider ring-1 ring-inset ${TONE_LABEL[latest.marketTone].cls}`}
+                      >
+                        {TONE_LABEL[latest.marketTone].label}
+                      </span>
+                    )}
+                    <span className="text-ash-400">
+                      · {formatDate(latest.weekOf)}
+                    </span>
+                  </div>
+                  <h2 className="text-2xl font-bold tracking-tight text-ash-50 sm:text-3xl">
+                    {latest.title}
+                  </h2>
+                  {latest.author?.name && (
+                    <p className="text-sm text-ash-400">
+                      by {latest.author.name}
+                      {latest.author.credentials && (
+                        <span className="text-ash-500">
+                          {" "}
+                          · {latest.author.credentials}
+                        </span>
+                      )}
+                    </p>
+                  )}
+                  {latestExclusive && (
+                    <p className="text-sm text-ash-300">
+                      Picks 1&ndash;3 are open on the web. Picks 4&ndash;10
+                      unlock {latestUnlock || "in 7 days"} &mdash; or get them
+                      all in tonight&rsquo;s newsletter.
+                    </p>
+                  )}
+                  <span className="inline-flex items-center gap-1 text-sm font-semibold text-accent-300">
+                    {latestExclusive
+                      ? "Preview this week\u2019s picks"
+                      : "Read all 10 picks"}
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </span>
                 </div>
-              )}
-            </div>
-            <div className="flex flex-col justify-center gap-4 p-6 sm:p-10">
-              <div className="flex flex-wrap items-center gap-2 text-xs">
-                <span className="inline-flex items-center gap-1 rounded-full bg-accent-500/15 px-2.5 py-1 font-semibold uppercase tracking-wider text-accent-300 ring-1 ring-inset ring-accent-500/30">
-                  Latest · {formatRelativeWeek(latest.weekOf)}
-                </span>
-                {latest.marketTone && TONE_LABEL[latest.marketTone] && (
-                  <span
-                    className={`inline-flex rounded-full px-2.5 py-1 font-semibold uppercase tracking-wider ring-1 ring-inset ${TONE_LABEL[latest.marketTone].cls}`}
-                  >
-                    {TONE_LABEL[latest.marketTone].label}
-                  </span>
-                )}
-                <span className="text-ash-400">
-                  · {formatDate(latest.weekOf)}
-                </span>
-              </div>
-              <h2 className="text-2xl font-bold tracking-tight text-ash-50 sm:text-3xl">
-                {latest.title}
-              </h2>
-              {latest.author?.name && (
-                <p className="text-sm text-ash-400">
-                  by {latest.author.name}
-                  {latest.author.credentials && (
-                    <span className="text-ash-500"> · {latest.author.credentials}</span>
-                  )}
-                </p>
-              )}
-              <span className="inline-flex items-center gap-1 text-sm font-semibold text-accent-300">
-                Read all 10 picks
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </span>
-            </div>
-          </Link>
+              </Link>
+            );
+          })()}
 
           {rest.length > 0 && (
             <section className="mt-14 border-t border-ink-700 pt-10">

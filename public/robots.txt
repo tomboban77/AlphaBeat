@@ -3,9 +3,10 @@ User-agent: *
 Allow: /
 Disallow: /api
 Disallow: /studio
+Disallow: /watchlist
 
 # Host
-Host: https://maplewealth.ca
+Host: https://alphabeat.io
 
 # Sitemaps
-Sitemap: https://maplewealth.ca/sitemap.xml
+Sitemap: https://alphabeat.io/sitemap.xml

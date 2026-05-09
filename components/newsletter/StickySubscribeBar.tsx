@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import { Mail, X } from "lucide-react";
 import NewsletterForm from "./NewsletterForm";
 
 const DISMISS_KEY = "alphabeat:sticky-bar-dismissed";
+const DISMISS_EVENT = "alphabeat:sticky-bar-dismissed-change";
 const DISMISS_DAYS = 7;
 
 /** Pathname prefixes where the sticky bar should NOT show. */
@@ -16,26 +17,45 @@ const HIDDEN_PATHS = [
   "/watchlist",
 ];
 
-function isDismissed(): boolean {
+function readDismissed(): boolean {
   if (typeof window === "undefined") return false;
   try {
     const raw = window.localStorage.getItem(DISMISS_KEY);
     if (!raw) return false;
     const ts = Number(raw);
     if (!Number.isFinite(ts)) return false;
-    const elapsedMs = Date.now() - ts;
-    return elapsedMs < DISMISS_DAYS * 24 * 60 * 60 * 1000;
+    return Date.now() - ts < DISMISS_DAYS * 24 * 60 * 60 * 1000;
   } catch {
     return false;
   }
 }
 
-function markDismissed() {
+function persistDismissed() {
   try {
     window.localStorage.setItem(DISMISS_KEY, String(Date.now()));
+    window.dispatchEvent(new CustomEvent(DISMISS_EVENT));
   } catch {
     // ignore
   }
+}
+
+function subscribe(cb: () => void) {
+  if (typeof window === "undefined") return () => {};
+  const handler = () => cb();
+  window.addEventListener(DISMISS_EVENT, handler);
+  window.addEventListener("storage", handler);
+  return () => {
+    window.removeEventListener(DISMISS_EVENT, handler);
+    window.removeEventListener("storage", handler);
+  };
+}
+
+function useDismissed(): boolean {
+  return useSyncExternalStore(
+    subscribe,
+    () => (readDismissed() ? "1" : "0"),
+    () => "0"
+  ) === "1";
 }
 
 /**
@@ -47,23 +67,24 @@ function markDismissed() {
  */
 export default function StickySubscribeBar() {
   const pathname = usePathname();
+  const dismissed = useDismissed();
+
+  // Visibility resets per route. We model this with the "track previous
+  // pathname during render" pattern so the lint rule (no setState in effect)
+  // stays satisfied.
   const [visible, setVisible] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
-
-  // Reset on route change so each page gets a fresh evaluation, but keep the
-  // dismissed status sticky across the whole session.
-  useEffect(() => {
+  const [trackedPath, setTrackedPath] = useState(pathname);
+  if (trackedPath !== pathname) {
+    setTrackedPath(pathname);
     setVisible(false);
-    setDismissed(isDismissed());
-  }, [pathname]);
+  }
+
+  const isHidden =
+    pathname === "/" ||
+    HIDDEN_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
   useEffect(() => {
-    if (dismissed) return;
-
-    const isHidden =
-      pathname === "/" ||
-      HIDDEN_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
-    if (isHidden) return;
+    if (dismissed || isHidden || visible) return;
 
     let frame = 0;
     function check() {
@@ -74,7 +95,6 @@ export default function StickySubscribeBar() {
       const ratio = scrollTop / max;
       if (ratio >= 0.5) {
         setVisible(true);
-        window.removeEventListener("scroll", onScroll);
       }
     }
     function onScroll() {
@@ -86,15 +106,9 @@ export default function StickySubscribeBar() {
       window.removeEventListener("scroll", onScroll);
       cancelAnimationFrame(frame);
     };
-  }, [pathname, dismissed]);
+  }, [pathname, dismissed, isHidden, visible]);
 
-  if (dismissed || !visible) return null;
-
-  function dismiss() {
-    setVisible(false);
-    setDismissed(true);
-    markDismissed();
-  }
+  if (dismissed || isHidden || !visible) return null;
 
   return (
     <div
@@ -109,7 +123,7 @@ export default function StickySubscribeBar() {
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-ash-50">
-              Get the weekly Top 10 in your inbox.
+              Get the weekly Top 10 a week before the web.
             </p>
             <p className="hidden text-xs text-ash-400 sm:block">
               Free Sundays. Unsubscribe in one click. No spam, ever.
@@ -117,7 +131,7 @@ export default function StickySubscribeBar() {
           </div>
           <button
             type="button"
-            onClick={dismiss}
+            onClick={persistDismissed}
             className="ml-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-ash-500 transition-colors hover:bg-ink-700 hover:text-ash-200"
             aria-label="Dismiss newsletter prompt"
           >
