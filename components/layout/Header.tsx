@@ -12,7 +12,6 @@ import { cn } from "@/lib/utils";
 const NAV = [
   { name: "Top 10", href: "/weekly-picks" },
   { name: "Hidden Gems", href: "/hidden-gems" },
-  { name: "By Sector", href: "/top" },
   { name: "ETFs", href: "/etfs" },
   { name: "Insights", href: "/insights" },
   { name: "Newsletter", href: "/newsletter" },

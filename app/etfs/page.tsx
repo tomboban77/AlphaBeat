@@ -120,17 +120,17 @@ export default async function EtfsPage() {
           Performance leaderboard
         </div>
         <h1 className="mt-3 text-3xl font-bold tracking-tight text-ash-50 sm:text-4xl">
-          The best-performing ETFs in US & Canada
+          The best-performing ETFs in US and Canada
         </h1>
         <p className="mt-3 text-ash-300">
-          Top 10 ETFs by trailing 1-year total return, ranked separately for
-          each market. Past performance is not a guarantee of future returns —
-          but it&rsquo;s a useful starting point for what&rsquo;s working right
-          now.
+          For investors who would rather not pick individual stocks. Top 10
+          ETFs by trailing 1-year total return, ranked separately for each
+          market and refreshed monthly. Below the leaderboards, browse our
+          full universe by category.
         </p>
         {returnsAsOf && (
           <p className="mt-2 text-xs text-ash-500">
-            Returns as of {returnsAsOf}. Live price &amp; daily change update
+            Returns as of {returnsAsOf}. Live price and daily change update
             during market hours.
           </p>
         )}

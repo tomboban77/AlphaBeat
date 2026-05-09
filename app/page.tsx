@@ -6,7 +6,7 @@ import {
   Check,
   Compass,
   Gem,
-  ShieldCheck,
+  LineChart,
   Sparkles,
   Target,
   Trophy,
@@ -138,7 +138,48 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ====================================================== VALUE PROPS */}
+      {/* ===================================================== HOW IT WORKS */}
+      <section className="border-b border-ink-800">
+        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+          <div className="mb-8 max-w-2xl">
+            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-400">
+              How AlphaBeat works
+            </div>
+            <h2 className="mt-2 text-2xl font-bold tracking-tight text-ash-50 sm:text-3xl">
+              One platform. Three jobs to be done.
+            </h2>
+            <p className="mt-2 text-ash-400">
+              Each section answers a different question. Pick the one that
+              matches your week.
+            </p>
+          </div>
+          <div className="grid gap-5 md:grid-cols-3">
+            <HowStep
+              n="01"
+              title="Tell me what to watch this week"
+              body="The Weekly Top 10. Ten stocks ranked by the editor's conviction, with thesis, time horizon, and a stated bear case. New issue every Sunday night."
+              href="/weekly-picks"
+              linkLabel="Read this week's Top 10"
+            />
+            <HowStep
+              n="02"
+              title="Surface ideas I would have missed"
+              body="Hidden Gems are sub-$20 names with asymmetric upside. Each one is risk-scored so you can size positions with eyes open. Two to three a month."
+              href="/hidden-gems"
+              linkLabel="Browse Hidden Gems"
+            />
+            <HowStep
+              n="03"
+              title="Help me understand what's happening"
+              body="Insights are long-form analysis on earnings, macro, sector dynamics, and company deep dives. ETF leaderboards rank passive options by 1-year performance."
+              href="/insights"
+              linkLabel="Read the latest analysis"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* ====================================================== PRODUCT GRID */}
       <section className="border-b border-ink-800 bg-ink-900/30">
         <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
           <div className="mb-10 max-w-2xl">
@@ -146,38 +187,40 @@ export default async function HomePage() {
               What you get from AlphaBeat
             </h2>
             <p className="mt-2 text-ash-400">
-              Built for self-directed investors who want signal, not noise.
+              Four products. No overlap. Each built for a different job.
             </p>
           </div>
-          <div className="grid gap-5 md:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             <ValuePropCard
               icon={<Trophy className="h-5 w-5 text-accent-300" />}
-              title="A clear list of what to watch"
-              body={
-                <>
-                  Every Monday, our editors publish a Top 10. Every sector has a
-                  permanent &ldquo;top stocks&rdquo; page. Stop scrolling, start
-                  reading.
-                </>
-              }
+              title="The Weekly Top 10"
+              body="Ten stocks ranked by conviction, with thesis and time horizon. Published every Sunday night, before Monday's open."
               href="/weekly-picks"
-              linkLabel="See the latest Top 10"
+              linkLabel="See this week's list"
             />
             <ValuePropCard
               icon={<Gem className="h-5 w-5 text-violet-300" />}
-              title="Asymmetric ideas under $20"
-              body="Hidden Gems surfaces small caps and turnaround stories with real upside — each pick risk-scored so you can size accordingly."
+              title="Hidden Gems"
+              body="Sub-$20 names with asymmetric upside. Hand-picked, risk-scored small caps that rarely make mainstream coverage."
               href="/hidden-gems"
-              linkLabel="Explore Hidden Gems"
+              linkLabel="Browse the gems"
               accent="violet"
             />
             <ValuePropCard
-              icon={<ShieldCheck className="h-5 w-5 text-up-300" />}
-              title="The risks, stated plainly"
-              body="Every stock page has a bear case alongside the bull case. We tell you what could break the thesis before it happens."
-              href="/screener"
-              linkLabel="Browse all coverage"
+              icon={<LineChart className="h-5 w-5 text-up-300" />}
+              title="ETF Leaderboard"
+              body="Top 10 best-performing US and Canadian ETFs ranked by 1-year total return. Refreshed monthly. For investors who'd rather not pick stocks."
+              href="/etfs"
+              linkLabel="View the leaderboard"
               accent="up"
+            />
+            <ValuePropCard
+              icon={<BookOpen className="h-5 w-5 text-warn-300" />}
+              title="Insights"
+              body="Long-form analysis when context matters more than the price. Earnings recaps, macro reads, deep dives, opinion pieces."
+              href="/insights"
+              linkLabel="Read the latest"
+              accent="warn"
             />
           </div>
         </div>
@@ -593,19 +636,23 @@ function ValuePropCard({
   body: React.ReactNode;
   href: string;
   linkLabel: string;
-  accent?: "accent" | "violet" | "up";
+  accent?: "accent" | "violet" | "up" | "warn";
 }) {
   const tone =
     accent === "violet"
       ? "border-violet-500/30 hover:border-violet-400/60"
       : accent === "up"
       ? "border-up-500/30 hover:border-up-400/60"
+      : accent === "warn"
+      ? "border-warn-500/30 hover:border-warn-400/60"
       : "border-accent-500/30 hover:border-accent-400/60";
   const linkTone =
     accent === "violet"
       ? "text-violet-300 hover:text-violet-200"
       : accent === "up"
       ? "text-up-300 hover:text-up-200"
+      : accent === "warn"
+      ? "text-warn-300 hover:text-warn-200"
       : "text-accent-300 hover:text-accent-200";
   return (
     <article
@@ -619,6 +666,37 @@ function ValuePropCard({
       <Link
         href={href}
         className={`mt-1 inline-flex items-center gap-1 text-sm font-semibold ${linkTone}`}
+      >
+        {linkLabel}
+        <ArrowRight className="h-3.5 w-3.5" />
+      </Link>
+    </article>
+  );
+}
+
+function HowStep({
+  n,
+  title,
+  body,
+  href,
+  linkLabel,
+}: {
+  n: string;
+  title: string;
+  body: string;
+  href: string;
+  linkLabel: string;
+}) {
+  return (
+    <article className="relative flex flex-col gap-3 rounded-2xl border border-ink-700 bg-ink-800/40 p-6 transition-colors hover:border-ink-600 hover:bg-ink-800/60">
+      <span className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-accent-300">
+        {n}
+      </span>
+      <h3 className="text-lg font-bold leading-tight text-ash-50">{title}</h3>
+      <p className="text-sm leading-relaxed text-ash-300">{body}</p>
+      <Link
+        href={href}
+        className="mt-auto inline-flex items-center gap-1 text-sm font-semibold text-accent-300 hover:text-accent-200"
       >
         {linkLabel}
         <ArrowRight className="h-3.5 w-3.5" />

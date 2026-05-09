@@ -41,14 +41,17 @@ export default async function WeeklyPicksPage() {
       <Breadcrumb items={[{ label: "Weekly Top 10" }]} />
 
       <header className="mb-10 max-w-3xl">
-        <h1 className="text-3xl font-bold tracking-tight text-ash-50 sm:text-4xl">
+        <div className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-400">
+          The flagship product
+        </div>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-ash-50 sm:text-4xl">
           Weekly Top 10
         </h1>
         <p className="mt-3 text-ash-300">
-          Every Monday, we publish ten stocks our editors are watching closely
-          this week — with a thesis, time horizon, and conviction level for
-          each. No clickbait. No generic &ldquo;buy ratings.&rdquo; Just an
-          opinionated read on where the puck is going.
+          Ten stocks worth your attention this week, ranked by the
+          editor&rsquo;s conviction. Every issue includes a thesis, a time
+          horizon, and a stated bear case for each name. New issue published
+          every Sunday night, before Monday&rsquo;s open.
         </p>
       </header>
 

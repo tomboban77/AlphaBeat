@@ -14,9 +14,9 @@ const groups = [
   {
     title: "Discover",
     links: [
-      { name: "Featured stock", href: "/stocks" },
       { name: "ETF leaderboard", href: "/etfs" },
-      { name: "Sectors", href: "/sectors" },
+      { name: "Featured stock", href: "/stocks" },
+      { name: "Sectors index", href: "/sectors" },
       { name: "Screener", href: "/screener" },
       { name: "Watchlist", href: "/watchlist" },
     ],

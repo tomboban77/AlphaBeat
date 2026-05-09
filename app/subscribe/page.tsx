@@ -2,11 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   ArrowRight,
+  BellRing,
+  CalendarClock,
   CheckCircle2,
   Clock,
   Compass,
+  Eye,
   Gem,
   Mail,
+  MessageCircle,
   ShieldCheck,
   Sparkles,
   Target,
@@ -93,48 +97,103 @@ export default async function SubscribePage() {
         </div>
       </section>
 
-      {/* ============================================ WHAT YOU GET (BENEFITS) */}
+      {/* =========================================== WHAT YOU GET (FORMAT) */}
       <section className="border-b border-ink-800">
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
           <div className="mx-auto mb-10 max-w-2xl text-center">
             <div className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-400">
-              What you get
+              The format
             </div>
             <h2 className="mt-2 text-2xl font-bold tracking-tight text-ash-50 sm:text-3xl">
-              Everything you need to start the week with conviction.
+              What every issue looks like.
             </h2>
+            <p className="mx-auto mt-2 max-w-xl text-sm text-ash-400">
+              One email. Ten stocks. Tight, opinionated, written by humans.
+            </p>
           </div>
           <div className="grid gap-5 lg:grid-cols-3">
             <Benefit
               icon={<Target className="h-5 w-5 text-accent-300" />}
-              title="The week's Top 10, ranked by conviction"
-              body="Not 50 names dumped in your inbox. Ten. Ranked. Each with a numbered conviction tier (high / medium / low) and a clear time horizon."
+              title="Ten stocks, ranked by conviction"
+              body="Not fifty names dumped in your inbox. Ten. Each with a numbered conviction tier and a clear time horizon."
             />
             <Benefit
               icon={<Compass className="h-5 w-5 text-violet-300" />}
-              title="The full thesis — bull AND bear"
-              body="Why the trade works, what could break it, what to watch. We tell you the risks before they bite. No clickbait, no pump-and-dump."
-            />
-            <Benefit
-              icon={<Gem className="h-5 w-5 text-fuchsia-300" />}
-              title="Hidden Gems alerts"
-              body="When a new sub-$20 idea with asymmetric upside lands, subscribers see it the same day it goes live — with the editor's full thesis."
+              title="The full thesis, bull and bear"
+              body="Why the trade works, what could break it, what to watch. We tell you the risks before they bite."
             />
             <Benefit
               icon={<TrendingUp className="h-5 w-5 text-up-300" />}
-              title="Built for both US and Canadian investors"
-              body="NASDAQ, NYSE, TSX, TSXV. Currency-aware. Tax-aware where relevant. The only investing newsletter that takes Canada seriously."
+              title="US and Canadian markets together"
+              body="NASDAQ, NYSE, TSX, TSXV. Currency-aware. The only investing newsletter that takes Canada seriously."
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* ====================================== SUBSCRIBER-ONLY EDGE */}
+      <section className="relative overflow-hidden border-b border-ink-800 bg-ink-900/40">
+        <div
+          aria-hidden
+          className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_85%_15%,rgba(34,211,238,0.10),transparent_55%)]"
+        />
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+          <div className="mx-auto mb-10 max-w-2xl text-center">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-accent-500/30 bg-accent-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-accent-300">
+              <Sparkles className="h-3.5 w-3.5" />
+              Subscriber edge
+            </div>
+            <h2 className="mt-3 text-2xl font-bold tracking-tight text-ash-50 sm:text-3xl">
+              What you get that website visitors don&rsquo;t.
+            </h2>
+            <p className="mx-auto mt-2 max-w-xl text-sm text-ash-400">
+              The newsletter is the flagship product. Here is what makes the
+              inbox version meaningfully better than just visiting the site.
+            </p>
+          </div>
+          <div className="grid gap-5 lg:grid-cols-2">
+            <Benefit
+              icon={<CalendarClock className="h-5 w-5 text-accent-300" />}
+              title="Sunday 8pm ET delivery"
+              body="Issues land in your inbox Sunday night. The web archive updates Monday morning. Subscribers get a twelve-hour head start before the open."
             />
             <Benefit
-              icon={<Clock className="h-5 w-5 text-warn-300" />}
-              title="A 5-minute read, not a research report"
-              body="Tight. Opinionated. No filler. We respect your Sunday night."
+              icon={<BellRing className="h-5 w-5 text-fuchsia-300" />}
+              title="Same-day Hidden Gem alerts"
+              body="When a new sub-$20 idea is published, subscribers get a one-line email the same day. Web visitors find it on their next visit."
             />
             <Benefit
-              icon={<ShieldCheck className="h-5 w-5 text-up-300" />}
-              title="Free forever. Unsubscribe in one click."
-              body="No paid tiers, no upsell funnel, no dark patterns. If we ever lose your trust, you're one click from leaving."
+              icon={<Eye className="h-5 w-5 text-warn-300" />}
+              title="The What I'm Watching read"
+              body="A short editor's note on macro signals, sector rotations, and the names that almost made the list. In the email only, not on the site."
             />
+            <Benefit
+              icon={<MessageCircle className="h-5 w-5 text-violet-300" />}
+              title="A direct line to the editor"
+              body="Reply to any issue. The editor reads every reply. No support queue, no autoresponder, no form."
+            />
+          </div>
+
+          <div className="mx-auto mt-10 grid max-w-3xl gap-4 sm:grid-cols-2">
+            <div className="rounded-2xl border border-ink-700 bg-ink-800/40 p-5">
+              <Clock className="h-5 w-5 text-ash-300" />
+              <h3 className="mt-3 text-base font-bold text-ash-50">
+                Five-minute read, weekly
+              </h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-ash-400">
+                Tight. Opinionated. No filler. We respect your Sunday night.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-ink-700 bg-ink-800/40 p-5">
+              <ShieldCheck className="h-5 w-5 text-up-300" />
+              <h3 className="mt-3 text-base font-bold text-ash-50">
+                Free forever, one-click unsubscribe
+              </h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-ash-400">
+                No paid tiers, no upsell funnel. If we ever lose your trust,
+                you are one click from leaving.
+              </p>
+            </div>
           </div>
         </div>
       </section>

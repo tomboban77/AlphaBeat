@@ -54,13 +54,13 @@ export default async function HiddenGemsPage() {
           Hidden Gems
         </div>
         <h1 className="mt-4 max-w-3xl text-balance text-4xl font-bold tracking-tight text-ash-50 sm:text-5xl">
-          Stocks under $20 with the biggest upside.
+          Sub-$20 names with asymmetric upside.
         </h1>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ash-300">
-          A short, opinionated list of small and mid-cap names our editors think
-          are worth a careful look. Each pick comes with the entry price, the
-          bull case, the risks, and a risk score. None of these are bets you
-          should size large.
+          A small, hand-picked list of stocks priced under $20 where the
+          editor sees outsized return potential relative to the downside. Each
+          pick comes with an entry price, a bull case, the risks, and a risk
+          score. These are speculative ideas. Position size accordingly.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link

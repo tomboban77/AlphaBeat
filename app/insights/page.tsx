@@ -56,12 +56,17 @@ export default async function InsightsPage({ searchParams }: InsightsPageProps) 
         <Breadcrumb items={[{ label: "Insights" }]} />
 
         <header className="mb-10 max-w-3xl">
-          <h1 className="text-3xl font-bold tracking-tight text-ash-50 sm:text-4xl">
+          <div className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-400">
+            Long-form analysis
+          </div>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-ash-50 sm:text-4xl">
             Insights
           </h1>
           <p className="mt-3 text-ash-300">
-            Independent analysis. Earnings recaps. Macro reads. Explainers
-            written by humans who own positions and disclose their risks.
+            Long-form pieces for the weeks the headlines do not tell the
+            whole story. Earnings recaps, sector deep dives, macro reads, and
+            opinion pieces — written by humans who own positions and disclose
+            their risks.
           </p>
         </header>
 

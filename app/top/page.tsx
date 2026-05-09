@@ -31,12 +31,13 @@ export default async function TopIndexPage() {
           Editor-led top lists
         </div>
         <h1 className="mt-4 text-balance text-4xl font-bold tracking-tight text-ash-50 sm:text-5xl">
-          Top stocks, organized by sector.
+          The best stocks in every sector.
         </h1>
         <p className="mt-3 text-lg leading-relaxed text-ash-300">
-          Permanent, evergreen lists of the names our editors think are worth
-          owning right now in each sector. Refreshed periodically as the cycle
-          moves — never just an algorithmic ranking.
+          Permanent reference lists, organized by industry. The names the
+          editor thinks deserve a long-term position in each sector. Updated
+          monthly when our view changes, not on a schedule. Different from the
+          Weekly Top 10, which is a tactical, time-sensitive call.
         </p>
       </header>
 
