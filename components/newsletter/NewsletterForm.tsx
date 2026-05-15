@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { ArrowRight, Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { trackBriefSubscribe } from "@/lib/analytics";
 
 interface NewsletterFormProps {
   /** Lets us track which surface a signup came from. */
@@ -53,6 +54,7 @@ export default function NewsletterForm({
             kind: "success",
             message: data.message || "You're in. First issue will land soon.",
           });
+          trackBriefSubscribe(source ?? "unknown");
           setEmail("");
         } else {
           setState({
@@ -101,7 +103,7 @@ export default function NewsletterForm({
       {/* Honeypot — visually hidden, no autocomplete. */}
       <label
         aria-hidden="true"
-        className="pointer-events-none absolute left-[-9999px] top-auto h-px w-px overflow-hidden"
+        className="pointer-events-none absolute -left-2499.75 top-auto h-px w-px overflow-hidden"
       >
         <span>Leave this field empty</span>
         <input

@@ -1,30 +1,30 @@
 import author from "./author";
-import insight from "./insight";
-import marketNote from "./marketNote";
-import sector from "./sector";
-import stock from "./stock";
-import etfEntry from "./etfEntry";
-import weeklyPick from "./weeklyPick";
-import topList from "./topList";
+import scoreSnapshot from "./scoreSnapshot";
+import digestSubscriber from "./digestSubscriber";
+import stockFile from "./stockFile";
+import brief from "./brief";
+import playbook from "./playbook";
+import rankedList from "./rankedList";
 import sponsorship from "./sponsorship";
 import siteSettings from "./siteSettings";
-import legacyPost from "./post";
-import legacyCategory from "./category";
+// Deprecated — kept until migration to new schemas completes
+import stock from "./stock";
+import weeklyPick from "./weeklyPick";
+import insight from "./insight";
 
-// Order matters in Studio sidebar — most-edited first.
+// Order: most-edited first
 export const schemaTypes = [
-  marketNote,
-  weeklyPick,
-  topList,
-  stock,
-  etfEntry,
-  sector,
-  insight,
+  brief,
+  stockFile,
+  playbook,
+  rankedList,
   sponsorship,
   author,
   siteSettings,
-  // Legacy types kept so existing Sanity documents still resolve in Studio.
-  // Safe to delete once you've migrated/cleaned up old data.
-  legacyPost,
-  legacyCategory,
+  scoreSnapshot,
+  digestSubscriber,
+  // Deprecated
+  stock,
+  weeklyPick,
+  insight,
 ];

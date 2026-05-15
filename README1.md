@@ -1,19 +1,30 @@
 # AlphaBeat
 
-> The investing platform for stocks worth watching. Editor-led coverage of US &amp; Canadian markets with a flagship Weekly Top 10, sector hubs, ETF deep-dives, and a fast stock screener.
+> The investing platform for stocks worth watching. Editor-led coverage of US &amp; Canadian markets with a flagship Weekly Top 10, sector hubs, ETF deep-dives, evergreen top-by-sector lists, market pulse, and a fast stock screener.
 
-A production-ready, SEO-optimized, sponsorship-friendly investing platform built on Next.js 16, Sanity CMS, Tailwind CSS v4, Recharts, and Finnhub.
+This repository is a production-ready, SEO-optimized, sponsorship-friendly investing site built on **Next.js 16** (App Router), **Sanity CMS**, **Tailwind CSS v4**, **Recharts**, and **Finnhub**. **Treat this file as the canonical inventory** of routes, env vars, CMS types, APIs, and ops workflows — when code changes, update this document in the same PR.
+
+---
 
 ## What this is
 
-- **Curated stock coverage** — every ticker has an editor's one-liner, full take, bull case, bear case, catalysts, and live price.
-- **Sectors & themes** — every stock lives inside a sector hub with hero treatment.
-- **ETF library** — categorized (US broad, US tech, dividends, Canada, thematic, bonds…) with editor's takes.
-- **Weekly Top 10** — flagship product. Each pick comes with thesis, conviction, and time horizon.
-- **Live stock screener** — client-side filter/sort across our entire universe.
-- **localStorage watchlist** — no signup, just tap the star.
-- **Cmd-K search** — global search across stocks, sectors, ETFs, insights, plus live ticker lookup via Finnhub.
-- **Sponsorship-ready** — `Sponsored` ribbon, regulatory disclosure, sponsor logos / CTAs, all driven from CMS.
+- **Curated stock coverage** — each ticker: editor headline, full take, bull case, bear case, catalysts, live price (or sample data if Finnhub is unset).
+- **Sectors &amp; themes** — every stock links to a **sector hub** with hero treatment.
+- **ETF library** — categorized (US broad, US tech, dividends, Canada, thematic, bonds…) with editor takes.
+- **Weekly Top 10** — flagship, time-bound product: thesis, conviction, time horizon per pick.
+- **Top by sector (evergreen)** — permanent **`topList`** pages under `/top` — *not* the same as the weekly list (tactical vs reference).
+- **Hidden gems** — curated subset of stocks surfaced on `/hidden-gems` and the home page.
+- **Market pulse** — `/pulse`: regime-style signals, heat, movers, Finnhub news, plus the latest Sanity **`marketNote`**; home also embeds a pulse widget.
+- **Insights** — long-form editorial (`insight` documents, Portable Text).
+- **Stock screener** — client-side filter/sort across the published stock universe.
+- **Watchlist** — `localStorage` only, no accounts; live quotes via `/api/quote`.
+- **Cmd-K search** — stocks, sectors, ETFs, insights, plus Finnhub ticker lookup.
+- **Newsletter** — Beehiiv-backed **`/subscribe`**, **`/api/subscribe`**, and **`/newsletter`** archive when API keys are set; provider lives under `lib/newsletter/`.
+- **Sponsorship** — `Sponsored` ribbon, disclosures, sponsor CTAs from CMS.
+
+There is **no logged-in product** beyond email capture (watchlist stays in the browser).
+
+---
 
 ## Tech stack
 
@@ -21,153 +32,291 @@ A production-ready, SEO-optimized, sponsorship-friendly investing platform built
 |---|---|
 | Framework | Next.js 16 App Router (TypeScript strict) |
 | UI | Tailwind CSS v4 + custom dark-first palette |
-| Content | Sanity v3 (GROQ, on-demand revalidation) |
-| Market data | Finnhub free tier (60 calls/min) with server-side caching |
-| Charts | Recharts (area chart with range switcher) |
+| Content | Sanity (GROQ, ISR, on-demand revalidation) |
+| Market data | Finnhub (free tier, ~60 calls/min) + server-side caching in `lib/market/finnhub.ts` |
+| Pulse aggregates | `lib/market/pulse.ts` (computed views on top of Finnhub + CMS) |
+| Charts | Recharts (area chart + range switcher) |
 | Search palette | `cmdk` |
+| Email list | Beehiiv (via `lib/newsletter/beehiiv.ts` + `lib/newsletter/provider.ts`) |
 | Deployment | Vercel-ready (ISR + on-demand revalidate) |
-| Analytics | Google Analytics 4 |
-| Monetization | Google AdSense + sponsored placements |
+| Sitemap | `next-sitemap` (`postbuild` in `package.json`) |
+| Analytics | Google Analytics 4 (optional) |
+| Monetization | Google AdSense + sponsored placements (optional) |
+
+---
 
 ## Getting started
 
 ```bash
 npm install
 cp .env.local.example .env.local
-# Fill in your Sanity project ID and Finnhub key (see below)
+# Edit .env.local — see [Environment variables](#environment-variables)
 npm run dev
 ```
 
-Open http://localhost:3000.
+- App: **http://localhost:3000**  
+- CMS: **http://localhost:3000/studio** (Sanity Studio; sign in with your Sanity account)
+
+---
+
+## Information architecture
+
+**Primary header** (`components/layout/Header.tsx`): Pulse · Weekly Top 10 · Hidden Gems · ETFs · Insights · Newsletter — plus search, watchlist, subscribe (large screens).
+
+**Footer** (`components/layout/Footer.tsx`): Top picks (weekly, gems, top by sector), Discover (pulse, ETFs, stocks index, sectors, screener, watchlist), Read (newsletter archive, subscribe, insights, about, sponsor), Legal (disclaimer, privacy, sponsorship policy anchor).
+
+**Implication:** `/stocks`, `/sectors`, `/screener`, `/top`, and `/weekly-picks` detail URLs are **secondary** in the top nav but reachable from home and footer — adjust nav if product priority changes.
+
+---
+
+## Routes reference (every user-facing page)
+
+| Path | Purpose |
+|---|---|
+| `/` | Home: hero, featured stock, weekly teaser, hidden gems, insights, sectors/ETFs/top-list teasers, pulse widget, recent Beehiiv posts (when configured). |
+| `/pulse` | Market pulse dashboard + latest `marketNote` + Finnhub news and computed signals. |
+| `/weekly-picks` | Archive of Weekly Top 10 editions (`weeklyPick`). |
+| `/weekly-picks/[slug]` | Single week: ranked picks with editor fields per stock. |
+| `/top` | Index of evergreen **top by sector** lists (`topList`). |
+| `/top/[slug]` | One evergreen list document. |
+| `/hidden-gems` | Hidden gems collection / landing. |
+| `/stocks` | Browse all published stocks. |
+| `/stocks/[slug]` | Stock detail: editorial, quote, chart, related links, sponsored treatment. |
+| `/sectors` | Sector taxonomy landing. |
+| `/sectors/[slug]` | Sector hub. |
+| `/etfs` | ETF library browse. |
+| `/etfs/[slug]` | ETF deep-dive. |
+| `/screener` | Client-side stock screener. |
+| `/watchlist` | Watchlist UI + quotes for starred tickers. |
+| `/insights` | Insights index. |
+| `/insights/[slug]` | Single insight article. |
+| `/newsletter` | Newsletter archive (Beehiiv posts when keys set). |
+| `/subscribe` | Dedicated subscribe landing + form → `POST /api/subscribe`. |
+| `/sponsor` | Sponsorship funnel + `#policy` anchor. |
+| `/about` | About the publication. |
+| `/disclaimer` | Disclaimer. |
+| `/privacy-policy` | Privacy policy. |
+| `/studio/[[...tool]]` | Sanity Studio (editors). |
+
+**App Router UX:** `app/loading.tsx`, `app/error.tsx`, `app/not-found.tsx` apply where configured.
+
+---
+
+## Global shell (wraps every page)
+
+| Piece | Location | Role |
+|---|---|---|
+| Root layout metadata, GA4, AdSense | `app/layout.tsx` | SEO defaults; scripts load only when env vars are set. |
+| JSON-LD Organization | `app/layout.tsx` | Structured data. |
+| Market ticker marquee | `components/market/MarketTicker.tsx` | Symbols from `siteSettings` + quotes. |
+| Header / Footer | `components/layout/` | Nav, links, footer newsletter form. |
+| Command palette (⌘K) | `components/layout/CommandPalette.tsx` | Local + remote search. |
+| Sticky subscribe bar | `components/newsletter/StickySubscribeBar.tsx` | Persistent CTA. |
+
+---
+
+## API routes
+
+| Method &amp; path | Role |
+|---|---|
+| `GET /api/quote?symbols=AAPL,MSFT` | Cached quote proxy for client components (~60s cache in handler). |
+| `GET /api/candles?symbol=AAPL&range=1M` | Cached OHLC for charts (~1h cache in handler). |
+| `GET /api/search?q=…` | Local index + Finnhub symbol search. |
+| `POST /api/revalidate` | Sanity webhook: validates `x-revalidation-secret`, then `revalidatePath` for affected routes (see below). |
+| `POST /api/subscribe` | Newsletter signup: JSON body `{ email, source?, utm_*?, website? }` — `website` is a honeypot; uses `lib/newsletter/provider.ts` (Beehiiv). |
+
+---
 
 ## Environment variables
 
+Copy **`.env.local.example`** → **`.env.local`** and fill in values. Never commit `.env.local`.
+
 | Variable | Required | Description |
 |---|---|---|
-| `NEXT_PUBLIC_SANITY_PROJECT_ID` | yes | Sanity project ID |
+| `NEXT_PUBLIC_SANITY_PROJECT_ID` | yes (real site) | Sanity project ID |
 | `NEXT_PUBLIC_SANITY_DATASET` | yes | Default `production` |
-| `SANITY_API_TOKEN` | dev / preview | Server-side Sanity token |
-| `FINNHUB_API_KEY` | recommended | Get a free key at https://finnhub.io — without it the site renders deterministic *sample* quotes (clearly labelled). |
-| `NEXT_PUBLIC_GA_MEASUREMENT_ID` | optional | `G-XXXXXXXXXX` |
-| `NEXT_PUBLIC_ADSENSE_PUBLISHER_ID` | optional | `ca-pub-XXXXXXXXXXXXXXXX` |
-| `REVALIDATION_SECRET` | optional | Used by the Sanity webhook → `/api/revalidate` |
-| `NEXT_PUBLIC_SITE_URL` | yes for prod | Your live domain (e.g. `https://alphabeat.io`) |
+| `SANITY_API_TOKEN` | dev / seed / preview | Server-side Sanity token (see `lib/sanity/client.ts`, `scripts/seed.mjs`) |
+| `NEXT_PUBLIC_SITE_URL` | yes for prod | Canonical site URL (OG, sitemap, `lib/utils.ts` `siteUrl()`) |
+| `FINNHUB_API_KEY` | recommended | https://finnhub.io — without it, quotes/charts use deterministic **sample** data labelled “Sample” |
+| `REVALIDATION_SECRET` | optional | Shared secret for `POST /api/revalidate` header `x-revalidation-secret` |
+| `NEXT_PUBLIC_GA_MEASUREMENT_ID` | optional | Google Analytics 4, e.g. `G-XXXXXXXXXX` |
+| `NEXT_PUBLIC_ADSENSE_PUBLISHER_ID` | optional | AdSense client ID, e.g. `ca-pub-XXXXXXXXXXXXXXXX` |
+| `BEEHIIV_API_KEY` | optional | Beehiiv API key — required together with publication ID for subscribe + archive |
+| `BEEHIIV_PUBLICATION_ID` | optional | Beehiiv publication ID |
+| `BEEHIIV_REACTIVATE` | optional | Default on unless set to `false` — reactivate unsubscribed emails (`lib/newsletter/beehiiv.ts`) |
+| `BEEHIIV_SEND_WELCOME` | optional | Default on unless set to `false` — control welcome automation |
+
+---
 
 ## How market data works
 
-The Finnhub wrapper (`lib/market/finnhub.ts`) wraps:
-- `getQuote(symbol)` — cached 60 s
-- `getQuotes(symbols)` — parallel batch
-- `getCandles(symbol, range)` — cached 1 h
-- `getCompanyProfile(symbol)` — cached 24 h
-- `searchSymbol(query)` — cached 1 h
+The Finnhub wrapper (`lib/market/finnhub.ts`) implements:
 
-Server pages call these directly (server components). Client components hit our pass-through routes:
-- `GET /api/quote?symbols=AAPL,MSFT,…`
-- `GET /api/candles?symbol=AAPL&range=1M`
-- `GET /api/search?q=apple`
+- `getQuote(symbol)` — cached ~60s  
+- `getQuotes(symbols)` — parallel batch  
+- `getCandles(symbol, range)` — cached ~1h  
+- `getCompanyProfile(symbol)` — cached ~24h  
+- `searchSymbol(query)` — cached ~1h  
+- Market news and other helpers used by `/pulse`
 
-Free-tier rate limit (60/min) is comfortably respected by these cache windows. **No `FINNHUB_API_KEY`?** The site still works — every quote / chart falls back to deterministic sample data labelled with a `Sample` badge so users (and you) know it's not real.
+**Server components** call Finnhub directly. **Client components** use the pass-through routes listed above.
+
+**No `FINNHUB_API_KEY`:** the app still runs; quotes and charts use deterministic sample data with a **Sample** badge.
 
 ### Symbol formatting
 
-- US stocks: bare ticker, e.g. `NVDA`
-- TSX: `.TO` suffix, e.g. `SHOP.TO`, `RY.TO`
-- TSXV: `.V` suffix
-- Indices: `^GSPC`, `^IXIC`, `^DJI`, `^GSPTSE`, `^VIX`
-- Editor short-hand `tsx:shop` / `tse:ry` → normalized in `lib/market/symbols.ts`
+- US: bare ticker, e.g. `NVDA`  
+- TSX: `.TO`, e.g. `SHOP.TO`  
+- TSXV: `.V`  
+- Indices: `^GSPC`, `^IXIC`, `^DJI`, `^GSPTSE`, `^VIX`  
+- Editor shorthand `tsx:shop` / `tse:ry` → `lib/market/symbols.ts`
+
+---
+
+## Newsletter (Beehiiv)
+
+- **Subscribe UI:** `components/newsletter/NewsletterForm.tsx`, pages `/subscribe`, sticky bar, footer, CTAs.  
+- **Server subscribe:** `POST /api/subscribe` → `getNewsletterProvider()` → **`lib/newsletter/beehiiv.ts`**.  
+- **Archive / “recent posts” on home:** `lib/newsletter/beehiiv-posts.ts` (requires both Beehiiv env vars).
+
+Without Beehiiv keys, subscribe may return a **not-configured** style outcome and archive lists may be empty — verify UX for your launch.
+
+---
 
 ## Content model (Sanity)
 
-Open `/studio` once the dev server is running to log in.
+Open **`/studio`** after `npm run dev` to sign in.
 
-| Document | Use it for |
+| Document type | Use it for |
 |---|---|
-| `weeklyPick` | The Weekly Top 10. Each row references a `stock` + thesis + conviction + horizon |
-| `stock` | Curated ticker entry — editor's headline, bull case, bear case, catalysts, related stocks/ETFs, sector ref, sponsorship link |
-| `etfEntry` | ETF deep-dive — listings, MER, AUM, distribution yield, top holdings |
-| `sector` | Sector taxonomy — Tech, AI, Energy, Healthcare, etc. with accent color &amp; icon |
-| `insight` | Editorial articles (analysis, news, earnings, macro, explainer, opinion) |
-| `sponsorship` | Sponsor metadata — logo, ticker, CTA, disclosure. Linked from `stock.sponsorship` |
+| `siteSettings` | Site name, tagline, marquee tickers, footer copy |
+| `stock` | Curated ticker: headline, bull/bear, catalysts, sector ref, related picks, `sponsored` + `sponsorship` ref |
+| `sector` | Taxonomy + hub: name, accent, icon |
+| `etfEntry` | ETF pages: MER, AUM, yield, holdings, categories |
+| `weeklyPick` | **Weekly Top 10** — time-bound list referencing stocks + per-row thesis / conviction / horizon |
+| `topList` | **Evergreen** “top by sector” lists for `/top` and `/top/[slug]` |
+| `insight` | Editorial articles (Portable Text, categories, featured flag) |
+| `marketNote` | Editor note powering **`/pulse`** and surfaced on home; webhook revalidates `/pulse` and `/` |
+| `sponsorship` | Sponsor logo, CTA, disclosure, dates — linked from `stock` when sponsored |
 | `author` | Bylines |
-| `siteSettings` | Site name, tagline, ticker symbols for the top marquee, footer text |
 
-Legacy types `post` and `category` remain registered so any existing Sanity documents from MapleWealth still resolve in Studio. Safe to delete after you've migrated.
+**Legacy:** `post` and `category` remain registered so older Studio documents still resolve. Remove from `sanity/schemaTypes/index.ts` after migration.
+
+---
 
 ## Sanity webhook (on-demand revalidation)
 
-In Sanity Studio → API → Webhooks:
-- **URL:** `https://yourdomain.com/api/revalidate`
-- **Trigger on:** Create, Update, Delete
-- **Filter:** `_type in ["stock","etfEntry","sector","weeklyPick","insight","sponsorship","siteSettings"]`
-- **HTTP Headers:** `x-revalidation-secret: <REVALIDATION_SECRET>`
+Configure in Sanity → **API** → **Webhooks**:
 
-When you publish in Sanity, the affected pages refresh in seconds — no redeploy.
+- **URL:** `https://yourdomain.com/api/revalidate`  
+- **Trigger on:** Create, Update, Delete  
+- **HTTP Headers:** `x-revalidation-secret: <REVALIDATION_SECRET>` (must match env)  
+- **Filter (GROQ):** keep in sync with **`app/api/revalidate/route.ts`**. As of this writing:
 
-## Project structure
+```groq
+_type in ["stock","etfEntry","sector","weeklyPick","topList","insight","marketNote","sponsorship","siteSettings"]
+```
+
+**Behavior summary:** the handler always revalidates the **root layout** (marquee / settings). Then by `_type` it revalidates **`/stocks`**, **`/sectors`**, **`/screener`**, **`/hidden-gems`**, **`/top`**, detail slugs, **`/weekly-picks`**, **`/etfs`**, **`/insights`**, **`/pulse`**, **`/`**, etc. If you add a new content-driven route, extend the switch in `route.ts` **and** update the filter line above.
+
+---
+
+## Project structure (high level)
 
 ```
 app/
-├── page.tsx              Home (market pulse, top 10, sectors, ETFs, insights)
-├── stocks/               /stocks browse + /stocks/[slug] detail
-├── sectors/              /sectors landing + /sectors/[slug] hub
-├── etfs/                 /etfs browse + /etfs/[slug] detail
-├── weekly-picks/         Top 10 archive + week detail
-├── screener/             Client-side stock screener
-├── watchlist/            localStorage watchlist (live quotes)
-├── insights/             Editorial articles
-├── sponsor/              Sponsorship landing (revenue funnel)
+├── page.tsx                 Home
+├── pulse/page.tsx           Market pulse
+├── weekly-picks/            Archive + [slug] week detail
+├── top/                     Evergreen lists + [slug]
+├── hidden-gems/page.tsx
+├── stocks/                  Browse + [slug] detail
+├── sectors/                 Index + [slug] hub
+├── etfs/                    Browse + [slug] detail
+├── screener/page.tsx
+├── watchlist/page.tsx
+├── insights/                Index + [slug]
+├── newsletter/page.tsx      Beehiiv archive
+├── subscribe/page.tsx     Subscribe landing
+├── sponsor/page.tsx
 ├── about, disclaimer, privacy-policy
+├── loading.tsx, error.tsx, not-found.tsx
 ├── api/
-│   ├── quote/            Live quotes proxy (60s server cache)
-│   ├── candles/          Historical candles (1h server cache)
-│   ├── search/           Local + remote symbol search
-│   └── revalidate/       Sanity webhook receiver
-└── studio/               Sanity Studio mounted at /studio
+│   ├── quote/route.ts
+│   ├── candles/route.ts
+│   ├── search/route.ts
+│   ├── revalidate/route.ts
+│   └── subscribe/route.ts
+└── studio/[[...tool]]/      Sanity Studio
 
 components/
-├── layout/               Header, Footer, Logo, CommandPalette
-├── market/               MarketTicker, PriceCell, Sparkline, StockChart
-├── stocks/               StockCard, StockGrid, StockFilterBar, Screener, SponsoredRibbon
-├── etfs/                 EtfCard, EtfGrid
-├── sectors/              SectorIcon, SectorBadge, SectorTile
-├── insights/             InsightCard
-├── watchlist/            WatchlistButton, WatchlistView
-├── portable/             PortableProse (dark theme rich-text)
-├── ui/                   SectionHeading, Disclaimer, Breadcrumb, Pagination
-└── ads/                  AdBanner, AdInArticle (only render when AdSense ID set)
+├── layout/                  Header, Footer, Logo, CommandPalette
+├── market/                  MarketTicker, PriceCell, Sparkline, StockChart
+├── pulse/                   MarketPulseWidget (home), pulse-only UI
+├── stocks/                  StockCard, grids, screener, SponsoredRibbon, HiddenGemCard
+├── etfs/                    EtfCard, EtfGrid
+├── sectors/                 SectorIcon, SectorBadge, SectorTile
+├── insights/                InsightCard
+├── newsletter/              NewsletterForm, NewsletterCTA, StickySubscribeBar
+├── watchlist/               WatchlistButton, WatchlistView
+├── portable/                PortableProse
+├── ui/                      SectionHeading, Disclaimer, Breadcrumb, Pagination
+└── ads/                     AdBanner, AdInArticle
 
 lib/
-├── sanity/               client, image url builder, GROQ queries
-├── market/               finnhub.ts, symbols.ts (normalization)
-├── types.ts              Strict TS types for all CMS + market shapes
-├── utils.ts              Formatters: price, percent, market cap, ticker, currency
-└── watchlist.ts          localStorage-backed reactive store
+├── sanity/                  client, image URL, GROQ queries
+├── market/                  finnhub.ts, symbols.ts, pulse.ts
+├── newsletter/              provider.ts, beehiiv.ts, beehiiv-posts.ts, exclusive helpers
+├── types.ts
+├── utils.ts
+└── watchlist.ts
 
-sanity/
-└── schemaTypes/          stock, sector, weeklyPick, sponsorship, etfEntry, insight, author, siteSettings
+sanity/schemaTypes/          marketNote, weeklyPick, topList, stock, etfEntry, sector,
+                             insight, sponsorship, author, siteSettings, post, category
+
+scripts/
+├── seed.mjs                 npm run seed | seed:reset
+└── newsletter/              Optional local issue drafts (e.g. issue-001.md), not wired to prod send
 ```
+
+---
+
+## Scripts
+
+| Command | Description |
+|---|---|
+| `npm run dev` | Next.js dev server |
+| `npm run build` / `npm start` | Production build / serve |
+| `npm run lint` | ESLint |
+| `npm run seed` | Seed Sanity (`scripts/seed.mjs`, requires env) |
+| `npm run seed:reset` | Reset + seed |
+
+---
 
 ## Deployment checklist
 
-- [ ] Set all env variables in Vercel
-- [ ] Sign up for Finnhub, paste API key into `FINNHUB_API_KEY`
-- [ ] Create Sanity project, paste IDs in env
-- [ ] Add Sanity webhook → `/api/revalidate`
-- [ ] Update `public/ads.txt` once approved for AdSense
-- [ ] Submit `sitemap.xml` to Google Search Console
-- [ ] Update `mailto:partners@alphabeat.io` and `mailto:privacy@alphabeat.io` to your real addresses
-- [ ] Fill in `siteSettings` in Sanity (name, tagline, ticker symbols for the marquee)
-- [ ] Publish at least 3-4 stocks across 2-3 sectors before going live (the home page is data-driven)
-- [ ] Publish your first `weeklyPick`
-- [ ] Apply for AdSense (need real content + traffic; come back at 10K/mo for Ezoic, 50K/mo for Mediavine)
+- [ ] Set all required env vars on the host (see table above)  
+- [ ] Finnhub: `FINNHUB_API_KEY` for real market data  
+- [ ] Sanity project + `SANITY_API_TOKEN` for server/seed  
+- [ ] Beehiiv: `BEEHIIV_*` if using subscribe + archive  
+- [ ] Webhook → `/api/revalidate` with **full `_type` filter** and secret header  
+- [ ] `public/ads.txt` after AdSense approval  
+- [ ] Submit `sitemap.xml` (from `next-sitemap`) to Search Console  
+- [ ] Replace placeholder `mailto:` targets (partners, privacy) sitewide if still generic  
+- [ ] Fill `siteSettings` in Sanity  
+- [ ] Publish initial stocks (3–4+ across sectors), at least one `weeklyPick`, and any `topList` / `marketNote` you want live day one  
+- [ ] AdSense / alternative ad network policy compliance  
+
+---
 
 ## Sponsorship workflow
 
-1. Create a `sponsorship` document — sponsor name, logo, ticker, CTA URL, disclosure, dates
-2. On the relevant `stock`, toggle `sponsored = true` and reference the sponsorship
-3. Publish — the stock card immediately gets the `Sponsored` ribbon, the detail page gets a disclosure ribbon, and the search palette de-prioritizes it
-4. Editorial (one-line take, bull/bear, risks) remains untouched. Always.
+1. Create a `sponsorship` document — name, logo, ticker, CTA URL, disclosure, dates.  
+2. On the `stock`, set `sponsored = true` and reference the sponsorship.  
+3. Publish — stock cards show **Sponsored**, detail page shows disclosure; search palette behavior follows implementation.  
+4. Editorial copy (bull/bear, thesis) stays independent — do not let sponsorship override editor fields.
+
+---
 
 ## License
 

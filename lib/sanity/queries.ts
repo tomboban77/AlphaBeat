@@ -370,3 +370,149 @@ export const siteSettingsQuery = groq`
 export const tickerSymbolsQuery = groq`
   *[_type == "siteSettings"][0].marketTickerSymbols
 `;
+
+// ============================================================================
+// StockFile (Phase 2+)
+// ============================================================================
+
+const stockFileCardFields = groq`
+  _id, ticker, exchange, finnhubSymbol, companyName, sectorLabel, slug,
+  lastReviewed, reviewType, editorScoreOverrides
+`;
+
+const stockFileDetailFields = groq`
+  ${stockFileCardFields},
+  bullCase, bearCase, canadianInvestorParagraph, accountFit, editorNotes
+`;
+
+export const allPublishedStockFilesQuery = groq`
+  *[_type == "stockFile"] | order(lastReviewed desc) { ${stockFileCardFields} }
+`;
+
+export const stockFileBySlugQuery = groq`
+  *[_type == "stockFile" && slug.current == $slug][0] { ${stockFileDetailFields} }
+`;
+
+export const stockFileSlugsQuery = groq`
+  *[_type == "stockFile" && defined(slug.current)][].slug.current
+`;
+
+export const stockFilesBySectorQuery = groq`
+  *[_type == "stockFile" && sectorLabel == $sector && slug.current != $excludeSlug]
+  | order(lastReviewed desc)[0...3] { ${stockFileCardFields} }
+`;
+
+export const recentStockFilesQuery = groq`
+  *[_type == "stockFile"] | order(lastReviewed desc)[0...$limit] { ${stockFileCardFields} }
+`;
+
+// ============================================================================
+// Brief (Phase 2+)
+// ============================================================================
+
+const briefCardFields = groq`
+  _id, title, slug, issueNumber, publishedAt, tsxQuickNote, seoDescription,
+  "featureStock": featureStock->{ _id, ticker, companyName, sectorLabel, slug },
+  "author": author->{ name, slug, image }
+`;
+
+const briefDetailFields = groq`
+  ${briefCardFields},
+  featureThesis, taxOrAccountTip
+`;
+
+export const latestBriefQuery = groq`
+  *[_type == "brief"] | order(publishedAt desc)[0] { ${briefCardFields} }
+`;
+
+export const allBriefsQuery = groq`
+  *[_type == "brief"] | order(publishedAt desc) { ${briefCardFields} }
+`;
+
+export const briefBySlugQuery = groq`
+  *[_type == "brief" && slug.current == $slug][0] { ${briefDetailFields} }
+`;
+
+export const briefSlugsQuery = groq`
+  *[_type == "brief" && defined(slug.current)][].slug.current
+`;
+
+// ============================================================================
+// Playbook (Phase 2+)
+// ============================================================================
+
+const playbookCardFields = groq`
+  _id, title, slug, lastUpdated, seoDescription
+`;
+
+const playbookDetailFields = groq`
+  ${playbookCardFields},
+  intro,
+  sections[] {
+    _key, heading, body,
+    "relatedStocks": relatedStocks[]->{ _id, ticker, companyName, slug }
+  }
+`;
+
+export const allPlaybooksQuery = groq`
+  *[_type == "playbook"] | order(lastUpdated desc) { ${playbookCardFields} }
+`;
+
+export const playbookBySlugQuery = groq`
+  *[_type == "playbook" && slug.current == $slug][0] { ${playbookDetailFields} }
+`;
+
+export const playbookSlugsQuery = groq`
+  *[_type == "playbook" && defined(slug.current)][].slug.current
+`;
+
+export const featuredPlaybooksQuery = groq`
+  *[_type == "playbook"] | order(lastUpdated desc)[0...3] { ${playbookCardFields} }
+`;
+
+// ============================================================================
+// RankedList (Phase 2+)
+// ============================================================================
+
+const rankedListCardFields = groq`
+  _id, title, slug, year, category, accountFocus, lastUpdated, seoDescription
+`;
+
+const rankedListDetailFields = groq`
+  ${rankedListCardFields},
+  intro, methodologyNote, changesLog,
+  entries[] {
+    _key, rank, editorTake, keyMetric, etfTicker, etfName,
+    "stockFile": stockFile->{ _id, ticker, companyName, sectorLabel, slug, editorScoreOverrides }
+  },
+  "relatedPlaybooks": relatedPlaybooks[]->{ _id, title, slug }
+`;
+
+export const allRankedListsQuery = groq`
+  *[_type == "rankedList"] | order(lastUpdated desc) { ${rankedListCardFields} }
+`;
+
+export const rankedListBySlugQuery = groq`
+  *[_type == "rankedList" && slug.current == $slug][0] { ${rankedListDetailFields} }
+`;
+
+export const rankedListSlugsQuery = groq`
+  *[_type == "rankedList" && defined(slug.current)][].slug.current
+`;
+
+export const featuredRankedListQuery = groq`
+  *[_type == "rankedList"] | order(lastUpdated desc)[0] { ${rankedListCardFields} }
+`;
+
+// ============================================================================
+// ScoreSnapshot (Phase 3+)
+// ============================================================================
+
+export const latestScoreSnapshotQuery = groq`
+  *[_type == "scoreSnapshot" && ticker == $ticker]
+  | order(computedAt desc)[0] {
+    ticker, computedAt,
+    scores { value, growth, quality, dividendSafety, momentum, taxEfficiency, overall },
+    insufficient { value, growth, quality, dividendSafety, momentum }
+  }
+`;

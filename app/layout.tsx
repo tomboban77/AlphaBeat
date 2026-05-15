@@ -4,9 +4,10 @@ import Script from "next/script";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import MarketTicker from "@/components/market/MarketTicker";
-import StickySubscribeBar from "@/components/newsletter/StickySubscribeBar";
-import { siteUrl, SITE_NAME, SITE_TAGLINE } from "@/lib/utils";
+import { siteUrl, SITE_NAME } from "@/lib/utils";
 import "./globals.css";
+
+const SITE_TAGLINE = "Canadian investing, made clearer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,15 +22,15 @@ export const metadata: Metadata = {
     template: `%s · ${SITE_NAME}`,
   },
   description:
-    "AlphaBeat is the editor-led investing platform for US & Canadian markets. Trending stocks by sector, hand-picked ETFs, and our flagship weekly Top 10.",
+    "AlphaBeat helps Canadian millennials and Gen Z invest with clarity — tax-aware, account-aware, TSX-fluent. Stock Files scored on 6 factors, a weekly Brief, Playbooks for TFSA/RRSP strategy, and a Watchlist with personalized digest.",
   applicationName: SITE_NAME,
   openGraph: {
     type: "website",
-    locale: "en_US",
+    locale: "en_CA",
     siteName: SITE_NAME,
     title: `${SITE_NAME} — ${SITE_TAGLINE}`,
     description:
-      "Trending stocks, sector heat-maps, weekly Top 10 picks, and editor's-take ETFs — all in one beautifully clear feed.",
+      "Tax-aware stock analysis, a weekly investing brief, and deep-dive playbooks for Canadian DIY investors.",
   },
   twitter: {
     card: "summary_large_image",
@@ -45,11 +46,10 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
-  const adsenseId = process.env.NEXT_PUBLIC_ADSENSE_PUBLISHER_ID;
 
   return (
     <html
-      lang="en"
+      lang="en-CA"
       data-scroll-behavior="smooth"
       className={`${geistSans.variable} dark h-full antialiased`}
     >
@@ -71,7 +71,6 @@ export default function RootLayout({
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
-        <StickySubscribeBar />
 
         {gaId && (
           <>
@@ -88,14 +87,6 @@ export default function RootLayout({
               `}
             </Script>
           </>
-        )}
-
-        {adsenseId && (
-          <Script
-            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseId}`}
-            strategy="afterInteractive"
-            crossOrigin="anonymous"
-          />
         )}
       </body>
     </html>

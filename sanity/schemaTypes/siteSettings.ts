@@ -70,6 +70,13 @@ export default defineType({
       rows: 2,
     }),
     defineField({
+      name: "enableAffiliates",
+      title: "Enable affiliate links",
+      type: "boolean",
+      initialValue: false,
+      description: "Show broker affiliate CTAs on Stock File and Top List pages. Off by default — enable when affiliate programs are set up.",
+    }),
+    defineField({
       name: "disclaimerText",
       title: "Site-wide disclaimer text",
       type: "text",

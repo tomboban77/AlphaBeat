@@ -2,7 +2,7 @@ import { defineField, defineType } from "sanity";
 
 export default defineType({
   name: "stock",
-  title: "Stock",
+  title: "Stock (DEPRECATED — migrate to Stock File)",
   type: "document",
   groups: [
     { name: "core", title: "Core", default: true },
@@ -74,14 +74,6 @@ export default defineType({
       type: "image",
       group: "core",
       options: { hotspot: true },
-    }),
-    defineField({
-      name: "sector",
-      title: "Sector",
-      type: "reference",
-      group: "core",
-      to: [{ type: "sector" }],
-      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: "industry",
@@ -236,14 +228,6 @@ export default defineType({
       type: "array",
       group: "editorial",
       of: [{ type: "reference", to: [{ type: "stock" }] }],
-      validation: (Rule) => Rule.max(6),
-    }),
-    defineField({
-      name: "relatedEtfs",
-      title: "Related ETFs",
-      type: "array",
-      group: "editorial",
-      of: [{ type: "reference", to: [{ type: "etfEntry" }] }],
       validation: (Rule) => Rule.max(6),
     }),
     defineField({

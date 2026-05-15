@@ -4,8 +4,8 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import {
   ArrowDownRight,
+  ArrowRight,
   ArrowUpRight,
-  Calendar,
   ExternalLink,
   Globe,
   TrendingDown,
@@ -14,11 +14,11 @@ import {
 
 import { client } from "@/lib/sanity/client";
 import {
-  stockBySlugQuery,
-  stockSlugsQuery,
-  insightsByTickerQuery,
+  stockFileBySlugQuery,
+  stockFileSlugsQuery,
+  stockFilesBySectorQuery,
+  latestScoreSnapshotQuery,
 } from "@/lib/sanity/queries";
-import { urlFor } from "@/lib/sanity/image";
 import {
   absoluteUrl,
   cn,
@@ -28,183 +28,164 @@ import {
   formatMarketCap,
   formatPercent,
   formatPrice,
+  formatDate,
   SITE_NAME,
 } from "@/lib/utils";
 import { getCandles, getCompanyProfile, getQuote } from "@/lib/market/finnhub";
-import { normalizeFinnhubSymbol } from "@/lib/market/symbols";
-import type { Insight, Stock } from "@/lib/types";
+import type { StockFile } from "@/lib/types";
+import { buildScore } from "@/lib/scoring";
 
 import Breadcrumb from "@/components/ui/Breadcrumb";
-import SectorBadge from "@/components/sectors/SectorBadge";
 import WatchlistButton from "@/components/watchlist/WatchlistButton";
 import StockChart from "@/components/market/StockChart";
-import PortableProse from "@/components/portable/PortableProse";
-import StockGrid from "@/components/stocks/StockGrid";
-import EtfCard from "@/components/etfs/EtfCard";
-import InsightCard from "@/components/insights/InsightCard";
-import SponsoredRibbon from "@/components/stocks/SponsoredRibbon";
+import StockCard from "@/components/stocks/StockCard";
+import ScoreDisplay from "@/components/scoring/ScoreDisplay";
+import AccountFitTable from "@/components/scoring/AccountFitTable";
+import { StockFileTracker } from "@/components/analytics/PageTracker";
+import NewsletterCTA from "@/components/newsletter/NewsletterCTA";
 import Disclaimer from "@/components/ui/Disclaimer";
 
 export const revalidate = 600;
 
-interface StockPageProps {
+interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
 export async function generateStaticParams() {
-  const slugs = await client.fetch<string[]>(stockSlugsQuery).catch(() => []);
+  const slugs = await client.fetch<string[]>(stockFileSlugsQuery).catch(() => []);
   return slugs.map((slug) => ({ slug }));
 }
 
-export async function generateMetadata({
-  params,
-}: StockPageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const stock = await client
-    .fetch<Stock | null>(stockBySlugQuery, { slug })
-    .catch(() => null);
-  if (!stock) return { title: "Stock not found" };
+  const sf = await client.fetch<StockFile | null>(stockFileBySlugQuery, { slug }).catch(() => null);
+  if (!sf) return { title: "Stock not found" };
 
-  const t = stock.metaTitle || `${displayTicker(stock.ticker)} (${stock.name})`;
-  const d =
-    stock.metaDescription ||
-    stock.headline ||
-    `${stock.name} (${displayTicker(stock.ticker)}) — live price, editor's take, bull and bear cases on ${SITE_NAME}.`;
-  const url = absoluteUrl(`/stocks/${stock.slug.current}`);
+  const t = `${sf.ticker} — ${sf.companyName} | ${SITE_NAME}`;
+  const d = `${sf.companyName} (${sf.ticker}) scored on value, growth, quality, dividend safety, momentum, and Canadian tax efficiency. AlphaBeat Stock File.`;
+  const url = absoluteUrl(`/stocks/${sf.slug.current}`);
 
   return {
     title: t,
     description: d,
     alternates: { canonical: url },
-    openGraph: {
-      title: t,
-      description: d,
-      url,
-      type: "article",
-    },
+    openGraph: { title: t, description: d, url, type: "article" },
   };
 }
 
-export default async function StockPage({ params }: StockPageProps) {
+export default async function StockFilePage({ params }: PageProps) {
   const { slug } = await params;
-  const stock = await client
-    .fetch<Stock | null>(stockBySlugQuery, { slug })
-    .catch(() => null);
-  if (!stock) notFound();
+  const sf = await client.fetch<StockFile | null>(stockFileBySlugQuery, { slug }).catch(() => null);
+  if (!sf) notFound();
 
-  const symbol = normalizeFinnhubSymbol(stock.ticker);
-  const currency = currencyFor(stock.exchange);
+  const apiSymbol = sf.finnhubSymbol || sf.ticker;
+  const currency = currencyFor(sf.exchange);
 
-  const [quote, profile, candles, relatedInsights] = await Promise.all([
-    getQuote(stock.ticker),
-    getCompanyProfile(stock.ticker),
-    getCandles(stock.ticker, "1M"),
+  const [quote, profile, candles, related, snapshot] = await Promise.all([
+    getQuote(apiSymbol),
+    getCompanyProfile(apiSymbol),
+    getCandles(apiSymbol, "5Y"),
     client
-      .fetch<Insight[]>(insightsByTickerQuery, { stockId: stock._id })
-      .catch(() => []),
+      .fetch<StockFile[]>(stockFilesBySectorQuery, {
+        sector: sf.sectorLabel,
+        excludeSlug: slug,
+      })
+      .catch(() => [] as StockFile[]),
+    client
+      .fetch(latestScoreSnapshotQuery, { ticker: sf.ticker })
+      .catch(() => null),
   ]);
 
-  const tone = quote.changePercent > 0 ? "up" : quote.changePercent < 0 ? "down" : "flat";
-  const sponsored = stock.sponsored && stock.sponsorship?.active;
+  const tone  = quote.changePercent > 0 ? "up" : quote.changePercent < 0 ? "down" : "flat";
+  const score = buildScore(sf.editorScoreOverrides, snapshot ?? undefined);
+
+  const isCanadian = sf.exchange === "TSX" || sf.exchange === "TSXV";
 
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Corporation",
-    name: stock.name,
-    tickerSymbol: stock.ticker,
-    url: absoluteUrl(`/stocks/${stock.slug.current}`),
-    logo: stock.logo?.asset
-      ? urlFor(stock.logo).width(400).height(400).url()
-      : profile?.logo,
-    sameAs: profile?.weburl ? [profile.weburl] : undefined,
+    "@type": "FinancialProduct",
+    name: sf.companyName,
+    tickerSymbol: sf.ticker,
+    url: absoluteUrl(`/stocks/${sf.slug.current}`),
+    description: sf.canadianInvestorParagraph,
   };
 
   return (
     <article>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
+      <StockFileTracker ticker={sf.ticker} sectorLabel={sf.sectorLabel} />
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <Breadcrumb
           items={[
-            { label: "Coverage", href: "/screener" },
-            ...(stock.sector
-              ? [
-                  {
-                    label: stock.sector.title,
-                    href: `/sectors/${stock.sector.slug.current}`,
-                  },
-                ]
-              : []),
-            { label: displayTicker(stock.ticker) },
+            { label: "Stock Files", href: "/stocks" },
+            { label: sf.sectorLabel },
+            { label: sf.ticker },
           ]}
         />
 
-        {/* ============ Header */}
-        <header className="rounded-2xl border border-ink-700 bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900 p-6 sm:p-8">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        {/* ── Header band ─────────────────────────────────────────────────── */}
+        <header className="rounded-2xl border border-ink-700 bg-linear-to-br from-ink-900 via-ink-800 to-ink-900 p-6 sm:p-8">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-ink-700 text-xl font-bold text-ash-100">
-                {stock.logo?.asset ? (
-                  <Image
-                    src={urlFor(stock.logo).width(160).height(160).url()}
-                    alt={`${stock.name} logo`}
-                    width={64}
-                    height={64}
-                    className="h-full w-full object-cover"
-                  />
-                ) : profile?.logo ? (
+              {profile?.logo && (
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-ink-700">
                   <Image
                     src={profile.logo}
-                    alt={`${stock.name} logo`}
+                    alt={`${sf.companyName} logo`}
                     width={64}
                     height={64}
                     className="h-full w-full object-contain bg-ink-900 p-1"
                     unoptimized
                   />
-                ) : (
-                  <span>{displayTicker(stock.ticker).slice(0, 2)}</span>
-                )}
-              </div>
+                </div>
+              )}
               <div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <h1 className="font-mono text-3xl font-bold tracking-tight text-ash-50 sm:text-4xl">
-                    {displayTicker(stock.ticker)}
+                    {sf.ticker}
                   </h1>
-                  <span className="rounded-md bg-ink-700 px-2 py-0.5 text-xs font-semibold uppercase text-ash-300">
-                    {stock.exchange}
+                  <span className="flex items-center gap-1 rounded-md bg-ink-700 px-2 py-0.5 text-xs font-semibold uppercase text-ash-300">
+                    {isCanadian && <span aria-label="Canadian listing">🇨🇦</span>}
+                    {sf.exchange}
+                  </span>
+                  <span className="rounded-full border border-ink-600 bg-ink-800/80 px-2.5 py-0.5 text-xs text-ash-400">
+                    {sf.sectorLabel}
                   </span>
                 </div>
-                <p className="mt-1 text-lg text-ash-200">{stock.name}</p>
-                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
-                  {stock.sector && <SectorBadge sector={stock.sector} />}
-                  {stock.industry && (
-                    <span className="text-ash-400">· {stock.industry}</span>
-                  )}
+                <p className="mt-1 text-lg text-ash-200">{sf.companyName}</p>
+                <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-ash-500">
+                  <span>
+                    Last reviewed: {formatDate(sf.lastReviewed)}
+                  </span>
+                  <span
+                    className={cn(
+                      "rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ring-1 ring-inset",
+                      sf.reviewType === "deep"
+                        ? "bg-accent-500/10 text-accent-300 ring-accent-500/30"
+                        : "bg-ink-700 text-ash-400 ring-ink-600"
+                    )}
+                  >
+                    {sf.reviewType === "deep" ? "Deep review" : "Quick check"}
+                  </span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-end gap-6">
+            <div className="flex items-end gap-4">
               <div className="text-right">
                 <div className="font-mono text-3xl font-bold tabular-nums text-ash-50 sm:text-4xl">
                   {formatPrice(quote.price, currency)}
                 </div>
                 <div
                   className={cn(
-                    "mt-1 inline-flex items-center gap-1.5 text-sm font-semibold tabular-nums",
+                    "mt-1 inline-flex items-center gap-1 text-sm font-semibold tabular-nums",
                     tone === "up" && "text-up-400",
                     tone === "down" && "text-down-400",
                     tone === "flat" && "text-ash-400"
                   )}
                 >
-                  {tone === "up" ? (
-                    <ArrowUpRight className="h-4 w-4" />
-                  ) : tone === "down" ? (
-                    <ArrowDownRight className="h-4 w-4" />
-                  ) : null}
+                  {tone === "up" ? <ArrowUpRight className="h-4 w-4" /> : tone === "down" ? <ArrowDownRight className="h-4 w-4" /> : null}
                   {formatChange(quote.change, currency)} ({formatPercent(quote.changePercent)})
                   {quote.stale && (
                     <span className="ml-1 rounded bg-warn-500/20 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-warn-300">
@@ -212,100 +193,65 @@ export default async function StockPage({ params }: StockPageProps) {
                     </span>
                   )}
                 </div>
+                {profile?.marketCap && profile.marketCap > 0 && (
+                  <div className="mt-1 text-xs text-ash-500">
+                    Mkt cap: {formatMarketCap(profile.marketCap, currency)}
+                  </div>
+                )}
               </div>
-              <WatchlistButton symbol={stock.ticker} variant="pill" />
+              <WatchlistButton symbol={sf.ticker} variant="pill" />
             </div>
           </div>
-
-          {/* Quick stats */}
-          <dl className="mt-6 grid grid-cols-2 gap-4 border-t border-ink-700 pt-6 text-sm sm:grid-cols-4">
-            <Stat label="Open" value={quote.open != null ? formatPrice(quote.open, currency) : "—"} />
-            <Stat label="Day high" value={quote.high != null ? formatPrice(quote.high, currency) : "—"} />
-            <Stat label="Day low" value={quote.low != null ? formatPrice(quote.low, currency) : "—"} />
-            <Stat label="Prev close" value={quote.prevClose != null ? formatPrice(quote.prevClose, currency) : "—"} />
-            {profile?.marketCap != null && (
-              <Stat label="Market cap" value={formatMarketCap(profile.marketCap, profile.currency || currency)} />
-            )}
-            {stock.marketCapBand && (
-              <Stat label="Cap band" value={
-                ({ mega: "Mega", large: "Large", mid: "Mid", small: "Small", micro: "Micro" } as const)[
-                  stock.marketCapBand
-                ]
-              } />
-            )}
-            {profile?.country && <Stat label="Country" value={profile.country} />}
-            {profile?.ipo && <Stat label="IPO" value={profile.ipo} />}
-          </dl>
         </header>
 
-        {sponsored && stock.sponsorship && (
-          <div className="mt-6">
-            <SponsoredRibbon sponsorship={stock.sponsorship} ticker={stock.ticker} />
-          </div>
-        )}
+        {/* ── Main grid ───────────────────────────────────────────────────── */}
+        <div className="mt-8 grid gap-8 lg:grid-cols-3">
+          {/* Left / main column */}
+          <div className="space-y-8 lg:col-span-2">
 
-        {/* ============ Two-col body */}
-        <div className="mt-10 grid gap-10 lg:grid-cols-3">
-          <div className="space-y-10 lg:col-span-2">
-            {/* Chart */}
+            {/* Score */}
+            <ScoreDisplay score={score} />
+
+            {/* 5-year chart */}
             <section>
               <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-ash-400">
-                Price chart
+                5-year price history
               </h2>
               <StockChart
-                symbol={symbol}
+                symbol={apiSymbol}
                 initialCandles={candles}
-                initialRange="1M"
+                initialRange="5Y"
                 currency={currency}
               />
             </section>
 
-            {stock.headline && (
-              <section className="rounded-2xl border border-accent-500/30 bg-accent-500/5 p-6">
-                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-300">
-                  Editor&rsquo;s one-liner
-                </div>
-                <p className="mt-2 text-xl leading-snug text-ash-50">
-                  {stock.headline}
-                </p>
-              </section>
-            )}
-
-            {stock.editorTake && stock.editorTake.length > 0 && (
-              <section>
-                <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-ash-400">
-                  Editor&rsquo;s take
-                </h2>
-                <PortableProse value={stock.editorTake} size="md" />
-              </section>
-            )}
-
-            {(stock.bullCase?.length || stock.bearCase?.length) && (
+            {/* Bull / Bear */}
+            {(sf.bullCase?.length || sf.bearCase?.length) && (
               <section className="grid gap-4 sm:grid-cols-2">
-                {stock.bullCase && stock.bullCase.length > 0 && (
+                {sf.bullCase && sf.bullCase.length > 0 && (
                   <div className="rounded-2xl border border-up-500/30 bg-up-500/5 p-5">
                     <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-up-400">
                       <TrendingUp className="h-3.5 w-3.5" /> Bull case
                     </div>
-                    <ul className="mt-3 space-y-2.5 text-sm leading-relaxed text-ash-200">
-                      {stock.bullCase.map((b, i) => (
+                    <ul className="mt-3 space-y-3 text-sm leading-relaxed text-ash-200">
+                      {sf.bullCase.map((b, i) => (
                         <li key={i} className="flex gap-2">
-                          <span className="mt-1.5 inline-block h-1 w-1 shrink-0 rounded-full bg-up-400" />
+                          <span className="mt-1.5 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-up-400" />
                           {b}
                         </li>
                       ))}
                     </ul>
                   </div>
                 )}
-                {stock.bearCase && stock.bearCase.length > 0 && (
+                {sf.bearCase && sf.bearCase.length > 0 && (
                   <div className="rounded-2xl border border-down-500/30 bg-down-500/5 p-5">
                     <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-down-400">
-                      <TrendingDown className="h-3.5 w-3.5" /> Risks &amp; bear case
+                      <TrendingDown className="h-3.5 w-3.5" /> Bear case
                     </div>
-                    <ul className="mt-3 space-y-2.5 text-sm leading-relaxed text-ash-200">
-                      {stock.bearCase.map((b, i) => (
+                    <ul className="mt-3 space-y-3 text-sm leading-relaxed text-ash-200">
+                      {sf.bearCase.map((b, i) => (
                         <li key={i} className="flex gap-2">
-                          <span className="mt-1.5 inline-block h-1 w-1 shrink-0 rounded-full bg-down-400" />
+                          <span className="mt-1.5 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-down-400" />
                           {b}
                         </li>
                       ))}
@@ -315,49 +261,58 @@ export default async function StockPage({ params }: StockPageProps) {
               </section>
             )}
 
-            {stock.catalysts && stock.catalysts.length > 0 && (
-              <section className="rounded-2xl border border-ink-700 bg-ink-800/60 p-5">
-                <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-ash-400">
-                  <Calendar className="h-3.5 w-3.5" /> Upcoming catalysts
+            {/* Why a Canadian investor might own this */}
+            {sf.canadianInvestorParagraph && (
+              <section className="rounded-2xl border border-accent-500/20 bg-accent-500/5 p-6">
+                <div className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-accent-400">
+                  Why a Canadian investor might own this
                 </div>
-                <ul className="mt-3 divide-y divide-ink-700">
-                  {stock.catalysts.map((c, i) => (
-                    <li
-                      key={c._key || i}
-                      className="flex items-center justify-between py-2.5 text-sm"
-                    >
-                      <span className="text-ash-100">{c.label}</span>
-                      <span className="font-mono text-xs text-ash-400">
-                        {c.date}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+                <p className="text-sm leading-relaxed text-ash-200">{sf.canadianInvestorParagraph}</p>
               </section>
             )}
 
-            {relatedInsights.length > 0 && (
-              <section>
-                <h2 className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-ash-400">
-                  Insights mentioning {displayTicker(stock.ticker)}
-                </h2>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {relatedInsights.slice(0, 4).map((i) => (
-                    <InsightCard key={i._id} insight={i} />
-                  ))}
-                </div>
-              </section>
-            )}
+            {/* Account Fit */}
+            <AccountFitTable accountFit={sf.accountFit} />
+
+            {/* Subscribe CTA */}
+            <NewsletterCTA source="stock-file" variant="banner" />
           </div>
 
-          {/* Sidebar */}
-          <aside className="space-y-6 lg:col-span-1">
+          {/* Right sidebar */}
+          <aside className="space-y-5 lg:col-span-1">
+            {/* Quick facts */}
+            <div className="rounded-2xl border border-ink-700 bg-ink-800/40 p-5">
+              <div className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-ash-400">Quick facts</div>
+              <dl className="space-y-2 text-sm">
+                <Row label="Ticker" value={displayTicker(sf.ticker)} mono />
+                <Row label="Exchange" value={sf.exchange} />
+                <Row label="Sector" value={sf.sectorLabel} />
+                {profile?.country && <Row label="Country" value={profile.country} />}
+                {profile?.ipo && <Row label="IPO" value={profile.ipo} />}
+                {profile?.marketCap && profile.marketCap > 0 && (
+                  <Row label="Market cap" value={formatMarketCap(profile.marketCap, currency)} />
+                )}
+              </dl>
+            </div>
+
+            {/* Affiliate slot — dormant placeholder */}
+            <div className="rounded-2xl border border-ink-600/50 bg-ink-800/30 p-5 text-sm">
+              <div className="text-xs font-semibold uppercase tracking-wider text-ash-500">Open an account</div>
+              <p className="mt-2 text-xs leading-relaxed text-ash-500">
+                {isCanadian
+                  ? "Buy this stock on Wealthsimple or Questrade — both offer commission-free TSX trading."
+                  : "Available on Wealthsimple and Questrade."}
+              </p>
+              <p className="mt-2 text-[10px] text-ash-600">Affiliate links coming soon.</p>
+            </div>
+
+            {/* IR link */}
             {profile?.weburl && (
               <a
                 href={profile.weburl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-between rounded-xl border border-ink-700 bg-ink-800/60 px-4 py-3 text-sm text-ash-200 hover:border-ink-500"
+                className="flex items-center justify-between rounded-xl border border-ink-700 bg-ink-800/60 px-4 py-3 text-sm text-ash-200 transition-colors hover:border-ink-500"
               >
                 <span className="inline-flex items-center gap-2">
                   <Globe className="h-4 w-4 text-ash-400" />
@@ -367,47 +322,26 @@ export default async function StockPage({ params }: StockPageProps) {
               </a>
             )}
 
-            {stock.relatedEtfs && stock.relatedEtfs.length > 0 && (
-              <section>
-                <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-ash-400">
-                  ETFs that hold {displayTicker(stock.ticker)}
-                </h3>
-                <div className="space-y-3">
-                  {stock.relatedEtfs.slice(0, 4).map((etf) => (
-                    <EtfCard key={etf._id} etf={etf} variant="compact" />
-                  ))}
-                </div>
-              </section>
-            )}
-
-            <Link
-              href="/sponsor"
-              className="block rounded-xl border border-warn-500/30 bg-warn-500/5 p-4 text-sm text-warn-200 transition-colors hover:border-warn-500/60"
-            >
-              <div className="font-semibold text-warn-300">
-                IR teams: get listed
-              </div>
-              <p className="mt-1 text-xs leading-relaxed text-warn-200/80">
-                Reach engaged investors. Every sponsored placement is clearly
-                disclosed and runs alongside our independent editor&rsquo;s take.
-              </p>
-            </Link>
-
             <Disclaimer variant="block" />
           </aside>
         </div>
 
-        {/* Related stocks */}
-        {stock.relatedStocks && stock.relatedStocks.length > 0 && (
+        {/* Related Stock Files */}
+        {related.length > 0 && (
           <section className="mt-14 border-t border-ink-700 pt-10">
-            <h2 className="mb-6 text-xl font-bold tracking-tight text-ash-50">
-              Related tickers
-            </h2>
-            <StockGrid
-              stocks={stock.relatedStocks.slice(0, 4)}
-              withSparklines
-              cols={4}
-            />
+            <div className="mb-6 flex items-end justify-between">
+              <h2 className="text-xl font-bold tracking-tight text-ash-50">
+                More from {sf.sectorLabel}
+              </h2>
+              <Link href="/stocks" className="text-sm font-semibold text-accent-300 hover:text-accent-200">
+                All Stock Files <ArrowRight className="inline h-3.5 w-3.5" />
+              </Link>
+            </div>
+            <div className="grid gap-5 sm:grid-cols-3">
+              {related.map((r) => (
+                <StockCard key={r._id} stock={r as unknown as import("@/lib/types").Stock} />
+              ))}
+            </div>
           </section>
         )}
       </div>
@@ -415,13 +349,11 @@ export default async function StockPage({ params }: StockPageProps) {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Row({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
-    <div>
-      <dt className="text-xs uppercase tracking-wider text-ash-500">{label}</dt>
-      <dd className="mt-0.5 font-mono font-semibold tabular-nums text-ash-100">
-        {value}
-      </dd>
+    <div className="flex items-center justify-between gap-3">
+      <dt className="text-ash-500">{label}</dt>
+      <dd className={cn("text-right text-ash-100", mono && "font-mono tabular-nums")}>{value}</dd>
     </div>
   );
 }

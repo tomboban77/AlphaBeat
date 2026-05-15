@@ -60,10 +60,33 @@ export function displayLabel(symbol: string): string {
 }
 
 /**
- * Currency for a Finnhub symbol — best-effort.
+ * Currency for a display/identity ticker — best-effort.
  */
 export function currencyForSymbol(symbol: string): string {
   if (symbol.endsWith(".TO") || symbol.endsWith(".V")) return "CAD";
   if (symbol === "^GSPTSE") return "CAD";
   return "USD";
+}
+
+/**
+ * Convert a display/identity ticker to the form Finnhub's free-tier API actually accepts.
+ *
+ * Finnhub free tier does NOT allow the `.TO` suffix on quote or metric endpoints.
+ * For dual-listed Canadian stocks (RY.TO, SHOP.TO, ENB.TO …) pass the bare NYSE/NASDAQ
+ * ticker instead — Finnhub returns the same underlying data and labels it as `RY.TO`.
+ * TSX-only stocks (ATD, CSU) work with the bare ticker for quotes but fundamentals
+ * may be sparse. Indices (^GSPTSE) and FX (CAD=X) pass through unchanged.
+ *
+ * Examples:
+ *   "RY.TO"   → "RY"
+ *   "SHOP.TO" → "SHOP"
+ *   "^GSPTSE" → "^GSPTSE"
+ *   "AAPL"    → "AAPL"
+ */
+export function toFinnhubApiSymbol(symbol: string): string {
+  if (!symbol) return symbol;
+  // Keep indices and FX as-is
+  if (symbol.startsWith("^") || symbol.includes("=")) return symbol;
+  // Strip .TO and .V suffixes; handle trust unit format REI-UN.TO → REI-UN
+  return symbol.replace(/\.(TO|V)$/i, "");
 }

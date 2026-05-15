@@ -1,6 +1,6 @@
 import "server-only";
 import type { CandlePoint, CompanyProfile, MarketQuote } from "@/lib/types";
-import { currencyForSymbol, normalizeFinnhubSymbol } from "./symbols";
+import { currencyForSymbol, normalizeFinnhubSymbol, toFinnhubApiSymbol } from "./symbols";
 
 /**
  * Server-side Finnhub wrapper.
@@ -73,8 +73,9 @@ interface FinnhubQuoteResponse {
  */
 export async function getQuote(symbolInput: string): Promise<MarketQuote> {
   const symbol = normalizeFinnhubSymbol(symbolInput);
+  const apiSymbol = toFinnhubApiSymbol(symbol);
   const data = await fhFetch<FinnhubQuoteResponse>(
-    `/quote?symbol=${encodeURIComponent(symbol)}`,
+    `/quote?symbol=${encodeURIComponent(apiSymbol)}`,
     60
   );
   const currency = currencyForSymbol(symbol);
@@ -155,12 +156,13 @@ export async function getCandles(
   range: CandleRange = "1M"
 ): Promise<CandlePoint[]> {
   const symbol = normalizeFinnhubSymbol(symbolInput);
+  const apiSymbol = toFinnhubApiSymbol(symbol);
   const cfg = RANGE_PARAMS[range];
   const now = Math.floor(Date.now() / 1000);
   const from = now - cfg.fromDelta;
 
   const data = await fhFetch<FinnhubCandleResponse>(
-    `/stock/candle?symbol=${encodeURIComponent(symbol)}&resolution=${cfg.resolution}&from=${from}&to=${now}`,
+    `/stock/candle?symbol=${encodeURIComponent(apiSymbol)}&resolution=${cfg.resolution}&from=${from}&to=${now}`,
     60 * 60
   );
 
@@ -200,8 +202,9 @@ export async function getCompanyProfile(
   symbolInput: string
 ): Promise<CompanyProfile | null> {
   const symbol = normalizeFinnhubSymbol(symbolInput);
+  const apiSymbol = toFinnhubApiSymbol(symbol);
   const data = await fhFetch<FinnhubProfile2>(
-    `/stock/profile2?symbol=${encodeURIComponent(symbol)}`,
+    `/stock/profile2?symbol=${encodeURIComponent(apiSymbol)}`,
     60 * 60 * 24
   );
   if (!data || !data.ticker) return null;

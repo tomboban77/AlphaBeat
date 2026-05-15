@@ -9,7 +9,14 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "node scripts/seed.mjs",
-    "seed:reset": "node scripts/seed.mjs --reset"
+    "seed:reset": "node scripts/seed.mjs --reset",
+    "migrate": "node scripts/migrate-to-new-schemas.mjs",
+    "score": "node scripts/score.mjs",
+    "seed:phase4": "node scripts/seed-phase4-stocks.mjs",
+    "seed:lists": "node scripts/seed-phase4-lists.mjs",
+    "import-content": "node scripts/import-content.mjs",
+    "populate-editorial": "node scripts/populate-editorial.mjs",
+    "digest": "node scripts/weekly-digest.mjs"
   },
   "dependencies": {
     "@portabletext/react": "^6.0.3",

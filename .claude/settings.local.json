@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"d:\\\\Blog-AI\" -Directory)",
+      "Bash(Select-Object -ExpandProperty Name)",
+      "WebSearch",
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\Blog-AI\\\\components\\\\scoring\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\Blog-AI\\\\lib\\\\scoring\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\Blog-AI\\\\.github\\\\workflows\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\Blog-AI\\\\content\\\\templates\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\Blog-AI\\\\content\\\\stocks\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\Blog-AI\\\\content\\\\briefs\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\Blog-AI\\\\content\\\\playbooks\")"
+    ]
+  }
+}

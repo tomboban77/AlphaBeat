@@ -388,3 +388,145 @@ export interface CompanyProfile {
   logo?: string;
   currency?: string;
 }
+
+// ============================================================================
+// New Phase 2 types
+// ============================================================================
+
+export type ExchangeNew = "TSX" | "TSXV" | "NYSE" | "NASDAQ";
+export type ReviewType = "quick" | "deep";
+export type AccountFitRec = "ideal" | "good" | "acceptable" | "avoid";
+
+export interface AccountFitEntry {
+  recommendation?: AccountFitRec;
+  reasoning?: string;
+}
+
+export interface AccountFit {
+  tfsa?: AccountFitEntry;
+  rrsp?: AccountFitEntry;
+  fhsa?: AccountFitEntry;
+  nonRegistered?: AccountFitEntry;
+}
+
+export interface ScoreOverrides {
+  value?: number;
+  growth?: number;
+  quality?: number;
+  dividendSafety?: number;
+  momentum?: number;
+  taxEfficiency?: number;
+}
+
+export interface FactorScore {
+  value: number | null;
+  label: string;
+  insufficient: boolean;
+  overridden: boolean;
+}
+
+export interface StockScore {
+  overall: number | null;
+  insufficient: boolean;
+  factors: {
+    value: FactorScore;
+    growth: FactorScore;
+    quality: FactorScore;
+    dividendSafety: FactorScore;
+    momentum: FactorScore;
+    taxEfficiency: FactorScore;
+  };
+}
+
+export interface StockFile {
+  _id: string;
+  ticker: string;
+  exchange: ExchangeNew;
+  finnhubSymbol: string;
+  companyName: string;
+  sectorLabel: string;
+  slug: SanitySlug;
+  lastReviewed: string;
+  reviewType?: ReviewType;
+  bullCase?: string[];
+  bearCase?: string[];
+  canadianInvestorParagraph?: string;
+  accountFit?: AccountFit;
+  editorScoreOverrides?: ScoreOverrides;
+  editorNotes?: string;
+}
+
+export interface Brief {
+  _id: string;
+  title: string;
+  slug: SanitySlug;
+  issueNumber: number;
+  publishedAt: string;
+  featureStock?: Pick<StockFile, "_id" | "ticker" | "companyName" | "sectorLabel" | "slug">;
+  featureThesis?: SanityBodyBlock[];
+  taxOrAccountTip?: SanityBodyBlock[];
+  tsxQuickNote?: string;
+  author?: Author;
+  seoDescription?: string;
+}
+
+export interface PlaybookSection {
+  _key?: string;
+  heading: string;
+  body?: SanityBodyBlock[];
+  relatedStocks?: Pick<StockFile, "_id" | "ticker" | "companyName" | "slug">[];
+}
+
+export interface Playbook {
+  _id: string;
+  title: string;
+  slug: SanitySlug;
+  intro?: SanityBodyBlock[];
+  sections?: PlaybookSection[];
+  lastUpdated: string;
+  seoDescription?: string;
+}
+
+export type RankedListCategory =
+  | "dividend-stocks"
+  | "growth-stocks"
+  | "bank-stocks"
+  | "precious-metals"
+  | "reit-stocks"
+  | "etfs"
+  | "under-20"
+  | "under-40";
+
+export type AccountFocus = "tfsa" | "rrsp" | "fhsa" | "non-registered" | "any";
+
+export interface RankedListEntry {
+  _key?: string;
+  rank: number;
+  stockFile?: Pick<StockFile, "_id" | "ticker" | "companyName" | "sectorLabel" | "slug">;
+  etfTicker?: string;
+  etfName?: string;
+  editorTake: string;
+  keyMetric: string;
+}
+
+export interface ChangesLogEntry {
+  _key?: string;
+  date: string;
+  change: string;
+}
+
+export interface RankedList {
+  _id: string;
+  title: string;
+  slug: SanitySlug;
+  year?: number;
+  category?: RankedListCategory;
+  accountFocus?: AccountFocus;
+  intro?: SanityBodyBlock[];
+  methodologyNote?: SanityBodyBlock[];
+  entries?: RankedListEntry[];
+  lastUpdated: string;
+  changesLog?: ChangesLogEntry[];
+  seoDescription?: string;
+  relatedPlaybooks?: Pick<Playbook, "_id" | "title" | "slug">[];
+}

@@ -4,40 +4,28 @@ import NewsletterForm from "@/components/newsletter/NewsletterForm";
 
 const groups = [
   {
-    title: "Top picks",
-    links: [
-      { name: "Weekly Top 10", href: "/weekly-picks" },
-      { name: "Hidden Gems", href: "/hidden-gems" },
-      { name: "Top by sector", href: "/top" },
-    ],
-  },
-  {
-    title: "Discover",
-    links: [
-      { name: "Market Pulse", href: "/pulse" },
-      { name: "ETF leaderboard", href: "/etfs" },
-      { name: "Featured stock", href: "/stocks" },
-      { name: "Sectors index", href: "/sectors" },
-      { name: "Screener", href: "/screener" },
-      { name: "Watchlist", href: "/watchlist" },
-    ],
-  },
-  {
     title: "Read",
     links: [
-      { name: "Newsletter archive", href: "/newsletter" },
+      { name: "The Brief", href: "/brief" },
+      { name: "Playbooks", href: "/playbooks" },
+      { name: "Stock Files", href: "/stocks" },
+      { name: "Top Lists", href: "/best" },
+    ],
+  },
+  {
+    title: "Tools",
+    links: [
+      { name: "Watchlist", href: "/watchlist" },
+      { name: "Methodology", href: "/methodology" },
       { name: "Subscribe", href: "/subscribe" },
-      { name: "Insights", href: "/insights" },
-      { name: "About", href: "/about" },
-      { name: "Sponsor your ticker", href: "/sponsor" },
     ],
   },
   {
     title: "Legal",
     links: [
+      { name: "About", href: "/about" },
       { name: "Disclaimer", href: "/disclaimer" },
-      { name: "Privacy policy", href: "/privacy-policy" },
-      { name: "Sponsorship policy", href: "/sponsor#policy" },
+      { name: "Privacy", href: "/privacy-policy" },
     ],
   },
 ];
@@ -46,16 +34,16 @@ export default function Footer() {
   return (
     <footer className="mt-20 border-t border-ink-700 bg-ink-950">
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 gap-8 md:grid-cols-5">
+        <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
           <div className="col-span-2 md:col-span-1">
             <Logo />
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-ash-400">
-              Curated investing intelligence for US &amp; Canadian markets.
-              Editor-led, data-driven, beautifully simple.
+              Canadian investing, made clearer. Tax-aware, account-aware,
+              TSX-fluent. Every Sunday.
             </p>
             <div className="mt-5 max-w-xs">
               <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-ash-400">
-                Weekly Top 10 to your inbox
+                Get the Brief — free, weekly
               </p>
               <NewsletterForm
                 source="footer"
@@ -88,12 +76,11 @@ export default function Footer() {
         <div className="mt-12 border-t border-ink-700 pt-6">
           <p className="text-xs leading-relaxed text-ash-500">
             <strong className="text-ash-400">Important.</strong> AlphaBeat is an
-            educational publication. Nothing here is investment advice or a
-            recommendation to buy, sell, or hold any security. Quotes are
-            delayed and may be inaccurate; verify with your broker before
-            acting. Sponsored placements are clearly labelled and do not
-            constitute an endorsement. Past performance does not predict
-            future results.
+            educational publication for Canadian individual investors. Nothing
+            here is investment advice or a recommendation to buy, sell, or hold
+            any security. Quotes are delayed and may be inaccurate; verify with
+            your broker before acting. Past performance does not predict future
+            results. AlphaBeat is not a registered investment adviser.
           </p>
           <p className="mt-3 text-xs text-ash-500">
             &copy; {new Date().getFullYear()} AlphaBeat. All rights reserved.

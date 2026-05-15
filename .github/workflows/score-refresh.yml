@@ -1,0 +1,32 @@
+name: Refresh AlphaBeat scores
+
+on:
+  schedule:
+    - cron: "0 10 * * *"   # 10:00 UTC = 06:00 ET daily
+  workflow_dispatch:         # manual trigger
+
+jobs:
+  score:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Write .env.local
+        run: |
+          cat > .env.local << 'EOF'
+          NEXT_PUBLIC_SANITY_PROJECT_ID=${{ secrets.SANITY_PROJECT_ID }}
+          NEXT_PUBLIC_SANITY_DATASET=production
+          SANITY_API_TOKEN=${{ secrets.SANITY_API_TOKEN }}
+          FINNHUB_API_KEY=${{ secrets.FINNHUB_API_KEY }}
+          NEXT_PUBLIC_SITE_URL=https://alphabeat.io
+          EOF
+
+      - name: Compute and persist scores
+        run: node scripts/score.mjs

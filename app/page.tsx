@@ -1,651 +1,243 @@
 import Link from "next/link";
-import Image from "next/image";
-import {
-  ArrowRight,
-  BookOpen,
-  Check,
-  Compass,
-  Gem,
-  LineChart,
-  Sparkles,
-  Target,
-  Trophy,
-} from "lucide-react";
+import { ArrowRight, BarChart2, BookOpen, FileText, Star } from "lucide-react";
 
 import { client } from "@/lib/sanity/client";
 import {
-  allTopListsQuery,
-  featuredHiddenGemsQuery,
-  featuredStockQuery,
-  latestInsightsQuery,
-  latestWeeklyPickQuery,
+  latestBriefQuery,
+  recentStockFilesQuery,
+  featuredRankedListQuery,
+  featuredPlaybooksQuery,
 } from "@/lib/sanity/queries";
-import type {
-  Stock,
-  Insight,
-  TopList,
-  WeeklyPick,
-  MarketQuote,
-  CandlePoint,
-} from "@/lib/types";
-import { urlFor } from "@/lib/sanity/image";
-import { formatDate, formatRelativeWeek } from "@/lib/utils";
-import { getCandles, getQuote, getQuotes } from "@/lib/market/finnhub";
-import { normalizeFinnhubSymbol } from "@/lib/market/symbols";
-import { listPublishedPosts } from "@/lib/newsletter/beehiiv-posts";
-import {
-  formatUnlockLabel,
-  isExclusiveIssue,
-} from "@/lib/newsletter/exclusive";
+import type { Brief, StockFile, RankedList, Playbook } from "@/lib/types";
+import { formatDate } from "@/lib/utils";
 
-import SectionHeading from "@/components/ui/SectionHeading";
-import StockCard from "@/components/stocks/StockCard";
-import HiddenGemCard from "@/components/stocks/HiddenGemCard";
-import InsightCard from "@/components/insights/InsightCard";
-import SectorIcon, { ACCENT_RING } from "@/components/sectors/SectorIcon";
-import Disclaimer from "@/components/ui/Disclaimer";
 import NewsletterCTA from "@/components/newsletter/NewsletterCTA";
-import MarketPulseWidget from "@/components/pulse/MarketPulseWidget";
+import Disclaimer from "@/components/ui/Disclaimer";
 
 export const revalidate = 600;
 
 async function getCmsData() {
-  const [featured, weekly, insights, gems, topLists, newsletterPosts] =
-    await Promise.all([
-      client.fetch<Stock | null>(featuredStockQuery).catch(() => null),
-      client.fetch<WeeklyPick | null>(latestWeeklyPickQuery).catch(() => null),
-      client.fetch<Insight[]>(latestInsightsQuery, { limit: 6 }).catch(() => []),
-      client.fetch<Stock[]>(featuredHiddenGemsQuery).catch(() => []),
-      client.fetch<TopList[]>(allTopListsQuery).catch(() => []),
-      listPublishedPosts({ limit: 3 }).catch(() => []),
-    ]);
-  return { featured, weekly, insights, gems, topLists, newsletterPosts };
+  const [latestBrief, recentStocks, featuredList, featuredPlaybooks] = await Promise.all([
+    client.fetch<Brief | null>(latestBriefQuery).catch(() => null),
+    client.fetch<StockFile[]>(recentStockFilesQuery, { limit: 6 }).catch(() => [] as StockFile[]),
+    client.fetch<RankedList | null>(featuredRankedListQuery).catch(() => null),
+    client.fetch<Playbook[]>(featuredPlaybooksQuery).catch(() => [] as Playbook[]),
+  ]);
+  return { latestBrief, recentStocks, featuredList, featuredPlaybooks };
 }
 
 export default async function HomePage() {
-  const { featured, weekly, insights, gems, topLists, newsletterPosts } =
-    await getCmsData();
-
-  const featuredQuote = featured ? await getQuote(featured.ticker) : null;
-  const featuredCandles = featured ? await getCandles(featured.ticker, "1M") : [];
-
-  // Quotes + sparks for hidden gems strip
-  const gemSyms = gems.map((g) => g.ticker);
-  const [gemQuoteMap, gemSparkResults] = await Promise.all([
-    getQuotes(gemSyms),
-    Promise.all(gemSyms.map(async (s) => [s, await getCandles(s, "1M")] as const)),
-  ]);
-  const gemQuotes: Record<string, MarketQuote> = {};
-  for (const [s, q] of gemQuoteMap.entries()) gemQuotes[s] = q;
-  const gemSparks: Record<string, CandlePoint[]> = {};
-  for (const [s, c] of gemSparkResults) gemSparks[normalizeFinnhubSymbol(s)] = c;
-
-  const featuredInsight = insights.find((i) => i.featured) || insights[0];
-  const restInsights = insights
-    .filter((i) => i._id !== featuredInsight?._id)
-    .slice(0, 6);
+  const { latestBrief, recentStocks, featuredList, featuredPlaybooks } = await getCmsData();
 
   return (
     <>
-      {/* ============================================================ HERO */}
+      {/* HERO */}
       <section className="relative overflow-hidden border-b border-ink-700">
         <div
           aria-hidden
           className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_15%_-10%,rgba(34,211,238,0.14),transparent_50%),radial-gradient(circle_at_85%_15%,rgba(167,139,250,0.12),transparent_55%)]"
         />
-        <div className="mx-auto max-w-5xl px-4 py-16 text-center sm:px-6 sm:py-20 lg:py-24">
+        <div className="mx-auto max-w-4xl px-4 py-16 text-center sm:px-6 sm:py-20 lg:py-24">
           <div className="inline-flex items-center gap-1.5 rounded-full border border-accent-500/30 bg-accent-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-accent-300">
-            <Sparkles className="h-3.5 w-3.5" />
-            Editor-led · No signup · US + Canadian markets
+            For Canadian DIY investors
           </div>
           <h1 className="mt-5 text-balance text-4xl font-bold tracking-tight text-ash-50 sm:text-5xl lg:text-6xl">
-            Stop guessing.{" "}
-            <span className="bg-gradient-to-r from-accent-300 via-accent-400 to-violet-400 bg-clip-text text-transparent">
-              Invest with conviction.
+            Invest with clarity.{" "}
+            <span className="bg-linear-to-r from-accent-300 via-accent-400 to-violet-400 bg-clip-text text-transparent">
+              Tax-aware. TSX-fluent.
             </span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-balance text-base leading-relaxed text-ash-300 sm:text-lg">
-            AlphaBeat tells you which stocks deserve your attention right now,
-            why each one matters, and what could go wrong. Editor-led picks.
-            Bull case and bear case for every ticker. No clickbait, no hidden
-            agenda.
+            AlphaBeat helps Canadian millennials and Gen Z invest smarter —
+            which account to hold it in, how eligible dividends affect your
+            return, and why the TFSA changes the math. Every Sunday.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
               href="/subscribe"
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-accent-500 px-6 py-3 text-sm font-semibold text-ink-950 shadow-lg shadow-accent-500/30 transition-all hover:bg-accent-400 hover:shadow-accent-500/50"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-accent-500 px-6 py-3 text-sm font-semibold text-ink-950 shadow-lg shadow-accent-500/30 transition-all hover:bg-accent-400"
             >
-              Get the weekly Top 10
+              Get the Brief — it&apos;s free
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
-              href="/weekly-picks"
+              href="/stocks"
               className="inline-flex items-center justify-center gap-2 rounded-full border border-ink-600 bg-ink-800 px-6 py-3 text-sm font-semibold text-ash-100 transition-all hover:border-ink-500"
             >
-              Read this week&rsquo;s picks
+              Browse Stock Files
             </Link>
           </div>
-
-          <ul className="mx-auto mt-10 flex max-w-3xl flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-ash-400">
-            <li className="inline-flex items-center gap-1.5">
-              <Check className="h-3.5 w-3.5 text-up-400" />
-              Subscribers read picks 7 days early
-            </li>
-            <li className="inline-flex items-center gap-1.5">
-              <Check className="h-3.5 w-3.5 text-up-400" />
-              Bull and bear case for every stock
-            </li>
-            <li className="inline-flex items-center gap-1.5">
-              <Check className="h-3.5 w-3.5 text-up-400" />
-              Live US &amp; Canadian quotes
-            </li>
-          </ul>
         </div>
       </section>
 
-      {/* ===================================================== MARKET PULSE WIDGET */}
-      <section className="border-b border-ink-800">
-        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-          <MarketPulseWidget />
-        </div>
-      </section>
-
-      {/* ===================================================== HOW IT WORKS */}
-      <section className="border-b border-ink-800">
-        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-          <div className="mb-8 max-w-2xl">
+      {/* LATEST BRIEF */}
+      {latestBrief ? (
+        <section className="border-b border-ink-800">
+          <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
             <div className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-400">
-              How AlphaBeat works
+              This week&apos;s Brief
             </div>
-            <h2 className="mt-2 text-2xl font-bold tracking-tight text-ash-50 sm:text-3xl">
-              One platform. Three jobs to be done.
-            </h2>
-            <p className="mt-2 text-ash-400">
-              Each section answers a different question. Pick the one that
-              matches your week.
-            </p>
+            <Link
+              href={`/brief/${latestBrief.slug.current}`}
+              className="group mt-4 flex flex-col rounded-2xl border border-accent-500/30 bg-linear-to-br from-ink-800 via-ink-900 to-accent-950 p-6 transition-all hover:border-accent-500/60 hover:shadow-xl hover:shadow-accent-500/10 sm:flex-row sm:items-center sm:gap-8 sm:p-8"
+            >
+              <div className="flex-1">
+                <div className="flex flex-wrap items-center gap-3 text-xs">
+                  <span className="rounded-full bg-accent-500/15 px-2.5 py-1 font-semibold text-accent-300 ring-1 ring-inset ring-accent-500/30">
+                    Issue #{latestBrief.issueNumber}
+                  </span>
+                  {latestBrief.publishedAt && (
+                    <span className="text-ash-400">{formatDate(latestBrief.publishedAt)}</span>
+                  )}
+                  {latestBrief.featureStock && (
+                    <span className="rounded bg-ink-700 px-2 py-0.5 font-mono text-ash-300">
+                      {latestBrief.featureStock.ticker}
+                    </span>
+                  )}
+                </div>
+                <h2 className="mt-3 text-2xl font-bold tracking-tight text-ash-50 sm:text-3xl">
+                  {latestBrief.title}
+                </h2>
+                {latestBrief.tsxQuickNote && (
+                  <p className="mt-2 text-sm text-ash-400">{latestBrief.tsxQuickNote}</p>
+                )}
+              </div>
+              <span className="mt-4 inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-accent-300 sm:mt-0">
+                Read this week&apos;s Brief
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </span>
+            </Link>
           </div>
-          <div className="grid gap-5 md:grid-cols-3">
-            <HowStep
-              n="01"
-              title="Tell me what to watch this week"
-              body="The Weekly Top 10. Ten stocks ranked by conviction, with thesis, horizon, and bear case. Newsletter subscribers get the full issue Sunday at 8pm ET; the web archive shows picks 1-3 in full and unlocks the rest seven days later."
-              href="/weekly-picks"
-              linkLabel="Read this week's Top 10"
-            />
-            <HowStep
-              n="02"
-              title="Surface ideas I would have missed"
-              body="Hidden Gems are sub-$20 names with asymmetric upside. Each one is risk-scored so you can size positions with eyes open. Two to three a month."
-              href="/hidden-gems"
-              linkLabel="Browse Hidden Gems"
-            />
-            <HowStep
-              n="03"
-              title="Help me understand what's happening"
-              body="Insights are long-form analysis on earnings, macro, sector dynamics, and company deep dives. ETF leaderboards rank passive options by 1-year performance."
-              href="/insights"
-              linkLabel="Read the latest analysis"
-            />
+        </section>
+      ) : (
+        <section className="border-b border-ink-800">
+          <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-400">Every Sunday</div>
+            <div className="mt-4 rounded-2xl border border-accent-500/20 bg-accent-500/5 p-6">
+              <h2 className="text-xl font-bold text-ash-50">The Brief launches soon</h2>
+              <p className="mt-2 text-sm text-ash-400">Subscribe to get the first issue in your inbox.</p>
+              <Link href="/subscribe" className="mt-4 inline-flex items-center gap-2 rounded-full bg-accent-500 px-5 py-2.5 text-sm font-semibold text-ink-950 hover:bg-accent-400">
+                Subscribe — it&apos;s free <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
+        </section>
+      )}
+
+      {/* SUBSCRIBE CARD */}
+      <section className="border-b border-ink-800 bg-ink-900/30">
+        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+          <NewsletterCTA source="home-subscribe" variant="banner" />
         </div>
       </section>
 
-      {/* ====================================================== PRODUCT GRID */}
-      <section className="border-b border-ink-800 bg-ink-900/30">
+      {/* FOUR SECTIONS */}
+      <section className="border-b border-ink-800">
         <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
           <div className="mb-10 max-w-2xl">
             <h2 className="text-2xl font-bold tracking-tight text-ash-50 sm:text-3xl">
-              What you get from AlphaBeat
+              Everything you need. Nothing you don&apos;t.
             </h2>
-            <p className="mt-2 text-ash-400">
-              Four products. No overlap. Each built for a different job.
-            </p>
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            <ValuePropCard
-              icon={<Trophy className="h-5 w-5 text-accent-300" />}
-              title="The Weekly Top 10"
-              body="Ten stocks ranked by conviction, with thesis and horizon. Subscribers get the full issue Sunday at 8pm ET; the web archive lags by a week."
-              href="/subscribe"
-              linkLabel="Get it Sunday night"
-            />
-            <ValuePropCard
-              icon={<Gem className="h-5 w-5 text-violet-300" />}
-              title="Hidden Gems"
-              body="Sub-$20 names with asymmetric upside. Hand-picked, risk-scored small caps that rarely make mainstream coverage."
-              href="/hidden-gems"
-              linkLabel="Browse the gems"
-              accent="violet"
-            />
-            <ValuePropCard
-              icon={<LineChart className="h-5 w-5 text-up-300" />}
-              title="ETF Leaderboard"
-              body="Top 10 best-performing US and Canadian ETFs ranked by 1-year total return. Refreshed monthly. For investors who'd rather not pick stocks."
-              href="/etfs"
-              linkLabel="View the leaderboard"
-              accent="up"
-            />
-            <ValuePropCard
-              icon={<BookOpen className="h-5 w-5 text-warn-300" />}
-              title="Insights"
-              body="Long-form analysis when context matters more than the price. Earnings recaps, macro reads, deep dives, opinion pieces."
-              href="/insights"
-              linkLabel="Read the latest"
-              accent="warn"
-            />
+            <SectionCard icon={<FileText className="h-5 w-5 text-accent-300" />} title="The Brief" body="Sunday newsletter. One Canadian stock, one tax tip, one TSX note. 500-800 words." href="/brief" linkLabel="Read the archive" />
+            <SectionCard icon={<BarChart2 className="h-5 w-5 text-up-300" />} title="Stock Files" body="Six-factor scored reference pages for TSX and US tickers. Value, growth, quality, dividend safety, momentum, and Canadian tax efficiency." href="/stocks" linkLabel="Browse Stock Files" accent="up" />
+            <SectionCard icon={<BookOpen className="h-5 w-5 text-violet-300" />} title="Playbooks" body="Deep evergreen guides: TFSA strategy, dividend investing, precious metals — built for the Canadian investor." href="/playbooks" linkLabel="Read the Playbooks" accent="violet" />
+            <SectionCard icon={<Star className="h-5 w-5 text-warn-300" />} title="The Tracker" body="Your watchlist. Save tickers, track scores, get a weekly digest. No account needed." href="/watchlist" linkLabel="Open my Watchlist" accent="warn" />
           </div>
         </div>
       </section>
 
-      {/* ============================================== WEEKLY PICK FEATURE */}
-      {weekly
-        ? (() => {
-            const weeklyExclusive = isExclusiveIssue(weekly.weekOf);
-            const weeklyUnlock = formatUnlockLabel(weekly.weekOf);
-            return (
-              <section className="border-b border-ink-800">
-                <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-                  <SectionHeading
-                    eyebrow="The flagship product"
-                    title="This week's Top 10"
-                    description={
-                      weeklyExclusive
-                        ? `Live in subscribers' inboxes now. Picks 1\u20133 are open on the web; the rest unlock ${weeklyUnlock || "in 7 days"}.`
-                        : "Editor-curated stocks worth your attention this week, with thesis, conviction, and time horizon."
-                    }
-                    href="/weekly-picks"
-                    hrefLabel="Read all 10 picks"
-                  />
-
-                  <Link
-                    href={`/weekly-picks/${weekly.slug.current}`}
-                    className="group relative mt-6 grid overflow-hidden rounded-2xl border border-accent-500/30 bg-gradient-to-br from-ink-800 via-ink-900 to-accent-950 transition-all hover:border-accent-500/60 hover:shadow-2xl hover:shadow-accent-500/10 sm:grid-cols-2"
-                  >
-                    <div className="relative aspect-[16/10] sm:aspect-auto">
-                      {weekly.heroImage?.asset ? (
-                        <Image
-                          src={urlFor(weekly.heroImage).width(900).height(600).url()}
-                          alt={weekly.title}
-                          fill
-                          className="object-cover transition-transform duration-700 group-hover:scale-105"
-                          sizes="(max-width: 640px) 100vw, 50vw"
-                        />
-                      ) : (
-                        <div className="flex h-full items-center justify-center bg-gradient-to-br from-ink-700 to-accent-900">
-                          <span className="text-7xl font-black tracking-tighter text-accent-300/40">
-                            α
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex flex-col justify-center gap-4 p-6 sm:p-10">
-                      <div className="flex flex-wrap items-center gap-2 text-xs">
-                        <span className="inline-flex items-center gap-1 rounded-full bg-accent-500/15 px-2.5 py-1 font-semibold uppercase tracking-wider text-accent-300 ring-1 ring-inset ring-accent-500/30">
-                          <Sparkles className="h-3 w-3" />
-                          {formatRelativeWeek(weekly.weekOf)}
-                        </span>
-                        {weeklyExclusive && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-up-500/10 px-2.5 py-1 font-semibold uppercase tracking-wider text-up-300 ring-1 ring-inset ring-up-500/30">
-                            Live in inboxes
-                          </span>
-                        )}
-                        <span className="text-ash-400">
-                          {formatDate(weekly.weekOf)}
-                        </span>
-                        {weekly.author?.name && (
-                          <span className="text-ash-500">
-                            · by {weekly.author.name}
-                          </span>
-                        )}
-                      </div>
-                      <h3 className="text-2xl font-bold tracking-tight text-ash-50 sm:text-3xl">
-                        {weekly.title}
-                      </h3>
-                      {weekly.picks && weekly.picks.length > 0 && (
-                        <p className="text-sm text-ash-300">
-                          Featuring{" "}
-                          <span className="font-semibold text-ash-100">
-                            {weekly.picks
-                              .slice(0, 5)
-                              .map((p) => p.stock?.ticker)
-                              .filter(Boolean)
-                              .join(", ")}
-                          </span>{" "}
-                          and {Math.max(0, weekly.picks.length - 5)} more.
-                        </p>
-                      )}
-                      <span className="inline-flex items-center gap-1 text-sm font-semibold text-accent-300">
-                        {weeklyExclusive
-                          ? "Preview this week\u2019s picks"
-                          : "Read all picks"}
-                        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                      </span>
-                    </div>
-                  </Link>
-                </div>
-              </section>
-            );
-          })()
-        : null}
-
-      {/* ===================================================== HIDDEN GEMS */}
-      {gems.length > 0 && (
-        <section className="border-b border-ink-800 bg-violet-950/10">
-          <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-            <SectionHeading
-              eyebrow="Hidden Gems"
-              title="Small bets, big upside"
-              description="Hand-picked stocks under $20 with asymmetric upside. Each pick is risk-scored so you size with eyes open."
-              href="/hidden-gems"
-              hrefLabel="See all Hidden Gems"
-            />
-            <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {gems.slice(0, 4).map((g) => (
-                <HiddenGemCard
-                  key={g._id}
-                  stock={g}
-                  quote={gemQuotes[normalizeFinnhubSymbol(g.ticker)]}
-                  spark={gemSparks[normalizeFinnhubSymbol(g.ticker)]}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* ============================================ TOP-LISTS BY SECTOR */}
-      {topLists.length > 0 && (
+      {/* RECENT STOCK FILES */}
+      {recentStocks.length > 0 && (
         <section className="border-b border-ink-800">
           <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-            <SectionHeading
-              eyebrow="Top stocks by sector"
-              title="A short list for every sector"
-              description="Permanent, evergreen lists of the names worth owning right now in each sector. Refreshed when our view changes."
-              href="/top"
-              hrefLabel="See all top lists"
-            />
-            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {topLists.slice(0, 6).map((list) => (
-                <Link
-                  key={list._id}
-                  href={`/top/${list.slug.current}`}
-                  className="group flex flex-col rounded-2xl border border-ink-700 bg-ink-800/60 p-5 transition-all hover:border-accent-500/40 hover:bg-ink-800"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <span
-                      className={`inline-flex h-8 w-8 items-center justify-center rounded-lg ring-1 ring-inset ${
-                        ACCENT_RING[list.sector?.accent || "cyan"]
-                      }`}
-                    >
-                      <SectorIcon icon={list.sector?.icon} className="h-4 w-4" />
-                    </span>
-                    <span className="text-xs font-semibold uppercase tracking-wider text-ash-400">
-                      {list.sector?.title}
-                    </span>
-                  </div>
-                  <h3 className="mt-3 text-base font-bold text-ash-50 group-hover:text-accent-200">
-                    {list.title}
-                  </h3>
-                  {list.subtitle && (
-                    <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-ash-400">
-                      {list.subtitle}
-                    </p>
-                  )}
-                  <div className="mt-auto flex items-center justify-between border-t border-ink-700 pt-3 text-[11px]">
-                    <span className="text-ash-500">
-                      {list.pickCount || 0} picks
-                    </span>
-                    {list.lastUpdated && (
-                      <span className="text-ash-500">
-                        Updated {formatDate(list.lastUpdated)}
-                      </span>
-                    )}
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* =========================================== FEATURED INSIGHT + GRID */}
-      {insights.length > 0 && (
-        <section className="border-b border-ink-800">
-          <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-            <SectionHeading
-              eyebrow="Insights"
-              title="Read deeper"
-              description="Earnings reactions, sector deep-dives, macro reads, and the occasional contrarian take."
-              href="/insights"
-              hrefLabel="All insights"
-            />
-
-            {featuredInsight && (
-              <Link
-                href={`/insights/${featuredInsight.slug.current}`}
-                className="group relative mt-6 grid overflow-hidden rounded-2xl border border-ink-700 bg-ink-800/60 transition-all hover:border-accent-500/40 hover:bg-ink-800 sm:grid-cols-2"
-              >
-                <div className="relative aspect-[16/10] sm:aspect-auto">
-                  {featuredInsight.mainImage?.asset ? (
-                    <Image
-                      src={urlFor(featuredInsight.mainImage).width(900).height(600).url()}
-                      alt={featuredInsight.mainImage.alt || featuredInsight.title}
-                      fill
-                      className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-                      sizes="(max-width: 640px) 100vw, 50vw"
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center bg-gradient-to-br from-ink-700 to-ink-800">
-                      <BookOpen className="h-16 w-16 text-ash-600" />
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-col justify-center gap-3 p-6 sm:p-10">
-                  <div className="flex flex-wrap items-center gap-2 text-xs">
-                    <span className="rounded-full bg-accent-500/10 px-2 py-0.5 font-semibold uppercase tracking-wider text-accent-300 ring-1 ring-inset ring-accent-500/30">
-                      Featured
-                    </span>
-                    {featuredInsight.kind && (
-                      <span className="rounded-full bg-ink-700 px-2 py-0.5 font-semibold uppercase tracking-wider text-ash-300">
-                        {featuredInsight.kind}
-                      </span>
-                    )}
-                    {featuredInsight.publishedAt && (
-                      <span className="text-ash-500">
-                        {formatDate(featuredInsight.publishedAt)}
-                      </span>
-                    )}
-                    {featuredInsight.readingTime && (
-                      <span className="text-ash-500">
-                        · {featuredInsight.readingTime} min read
-                      </span>
-                    )}
-                  </div>
-                  <h3 className="text-2xl font-bold tracking-tight text-ash-50 sm:text-3xl">
-                    {featuredInsight.title}
-                  </h3>
-                  {featuredInsight.excerpt && (
-                    <p className="text-sm leading-relaxed text-ash-300">
-                      {featuredInsight.excerpt}
-                    </p>
-                  )}
-                  <span className="inline-flex items-center gap-1 text-sm font-semibold text-accent-300">
-                    Read the article
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </span>
-                </div>
-              </Link>
-            )}
-
-            {restInsights.length > 0 && (
-              <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {restInsights.map((insight) => (
-                  <InsightCard key={insight._id} insight={insight} />
-                ))}
+            <div className="mb-6 flex items-end justify-between">
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-400">Recently updated</div>
+                <h2 className="mt-1 text-2xl font-bold tracking-tight text-ash-50">Stock Files</h2>
               </div>
-            )}
+              <Link href="/stocks" className="group inline-flex items-center gap-1 text-sm font-semibold text-accent-300 hover:text-accent-200">
+                All Stock Files <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+            </div>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {recentStocks.map((sf) => (
+                <StockFileCard key={sf._id} sf={sf} />
+              ))}
+            </div>
           </div>
         </section>
       )}
 
-      {/* ============================================ FEATURED STOCK CARD */}
-      {featured && (
+      {/* TOP LIST TEASER */}
+      {featuredList ? (
         <section className="border-b border-ink-800 bg-ink-900/30">
           <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-            <SectionHeading
-              eyebrow="Stock spotlight"
-              title="A name we're paying close attention to"
-              description="One stock per week gets a fuller editor's spotlight. Read the thesis, the bull and bear, and the catalysts."
-            />
-            <div className="mt-6 grid gap-5 lg:grid-cols-3">
-              <div className="lg:col-span-2 rounded-2xl border border-accent-500/30 bg-gradient-to-br from-ink-800 via-ink-900 to-accent-950/40 p-6 sm:p-8">
-                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-accent-300">
-                  <Target className="h-3.5 w-3.5" />
-                  Editor&rsquo;s Spotlight
-                </div>
-                <h3 className="mt-3 font-mono text-2xl font-bold text-ash-50 sm:text-3xl">
-                  {featured.ticker}
-                  <span className="ml-3 font-sans text-base font-medium text-ash-400">
-                    {featured.name}
-                  </span>
-                </h3>
-                {featured.headline && (
-                  <p className="mt-3 max-w-2xl text-base leading-relaxed text-ash-200 sm:text-lg">
-                    &ldquo;{featured.headline}&rdquo;
-                  </p>
-                )}
-                <div className="mt-6 flex flex-wrap gap-3">
-                  <Link
-                    href={`/stocks/${featured.slug.current}`}
-                    className="inline-flex items-center gap-2 rounded-full bg-accent-500 px-5 py-2.5 text-sm font-semibold text-ink-950 hover:bg-accent-400"
-                  >
-                    Read the full thesis
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                  <Link
-                    href="/screener"
-                    className="inline-flex items-center gap-2 rounded-full border border-ink-600 bg-ink-800 px-5 py-2.5 text-sm font-semibold text-ash-200 hover:border-ink-500"
-                  >
-                    Browse all stocks
-                  </Link>
-                </div>
-              </div>
-              <div className="lg:col-span-1">
-                <StockCard
-                  stock={featured}
-                  quote={featuredQuote || undefined}
-                  spark={featuredCandles}
-                  variant="spotlight"
-                />
-              </div>
+            <div className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-accent-400">Most-read this month</div>
+            <Link
+              href={`/best/${featuredList.slug.current}`}
+              className="group block rounded-2xl border border-ink-700 bg-ink-800/60 p-6 transition-all hover:border-accent-500/40 hover:bg-ink-800"
+            >
+              <h2 className="text-xl font-bold text-ash-50 group-hover:text-accent-200">{featuredList.title}</h2>
+              {featuredList.lastUpdated && (
+                <p className="mt-1 text-xs text-ash-500">Updated {formatDate(featuredList.lastUpdated)} · Quarterly</p>
+              )}
+              <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-accent-300">
+                See the list <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </span>
+            </Link>
+            <div className="mt-3 text-center">
+              <Link href="/best" className="text-sm text-ash-500 hover:text-ash-300">View all Top Lists →</Link>
             </div>
+          </div>
+        </section>
+      ) : (
+        <section className="border-b border-ink-800 bg-ink-900/30">
+          <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+            <div className="mb-6 text-xs font-semibold uppercase tracking-[0.18em] text-accent-400">Quarterly updated</div>
+            <TopListTeasers />
           </div>
         </section>
       )}
 
-      {/* ============================================== NEWSLETTER + ARCHIVE */}
-      <section className="border-b border-ink-800 bg-ink-950">
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-          <NewsletterCTA source="home-banner" variant="banner" />
-
-          {newsletterPosts.length > 0 && (
-            <div className="mt-10">
-              <div className="mb-4 flex items-end justify-between">
-                <div>
-                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-400">
-                    Recent issues
-                  </div>
-                  <h3 className="mt-1 text-xl font-bold tracking-tight text-ash-50">
-                    Read before you subscribe.
-                  </h3>
-                </div>
-                <Link
-                  href="/newsletter"
-                  className="group inline-flex items-center gap-1 text-sm font-semibold text-accent-300 transition-colors hover:text-accent-200"
-                >
-                  All issues
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                </Link>
+      {/* PLAYBOOKS TEASER */}
+      {featuredPlaybooks.length > 0 ? (
+        <section className="border-b border-ink-800">
+          <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+            <div className="mb-6 flex items-end justify-between">
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-400">Deep-dive guides</div>
+                <h2 className="mt-1 text-2xl font-bold tracking-tight text-ash-50">Playbooks</h2>
               </div>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {newsletterPosts.map((post, idx) => {
-                  const date = post.publish_date
-                    ? new Date(post.publish_date * 1000).toLocaleDateString(
-                        "en-US",
-                        {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        }
-                      )
-                    : "";
-                  const issueNumber = newsletterPosts.length - idx;
-                  return (
-                    <a
-                      key={post.id}
-                      href={post.web_url || "#"}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group flex flex-col rounded-2xl border border-ink-700 bg-ink-800/40 p-5 transition-all hover:border-accent-500/40 hover:bg-ink-800/60"
-                    >
-                      <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider">
-                        <span className="rounded-full bg-accent-500/10 px-2 py-0.5 text-accent-300 ring-1 ring-inset ring-accent-500/30">
-                          Issue #{issueNumber}
-                        </span>
-                        {date && (
-                          <span className="text-ash-500">{date}</span>
-                        )}
-                      </div>
-                      <h4 className="mt-3 line-clamp-2 text-base font-bold text-ash-50 group-hover:text-accent-200">
-                        {post.title}
-                      </h4>
-                      {post.subtitle && (
-                        <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-ash-400">
-                          {post.subtitle}
-                        </p>
-                      )}
-                    </a>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* =========================================== SPONSOR CTA + CLOSER */}
-      <section className="bg-ink-950">
-        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-          <div className="grid gap-6 rounded-2xl border border-warn-500/30 bg-warn-500/5 p-6 sm:grid-cols-3 sm:p-8">
-            <div className="sm:col-span-2">
-              <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-warn-300">
-                <Compass className="h-3.5 w-3.5" />
-                For listed companies &amp; IR teams
-              </div>
-              <h3 className="mt-3 text-2xl font-bold tracking-tight text-ash-50">
-                Get your ticker in front of investors who actually read.
-              </h3>
-              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ash-300">
-                Sponsored placements are clearly labelled, sit beside an
-                independent editor&rsquo;s take, and link to your IR materials.
-                Sponsorship buys visibility — never editorial.
-              </p>
-            </div>
-            <div className="flex items-end">
-              <Link
-                href="/sponsor"
-                className="inline-flex items-center gap-2 rounded-full bg-warn-500 px-5 py-2.5 text-sm font-semibold text-ink-950 hover:bg-warn-300"
-              >
-                See sponsorship options
-                <ArrowRight className="h-4 w-4" />
+              <Link href="/playbooks" className="group inline-flex items-center gap-1 text-sm font-semibold text-accent-300 hover:text-accent-200">
+                All Playbooks <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
             </div>
+            <div className="grid gap-5 sm:grid-cols-3">
+              {featuredPlaybooks.map((pb) => (
+                <Link key={pb._id} href={`/playbooks/${pb.slug.current}`} className="group flex flex-col rounded-2xl border border-ink-700 bg-ink-800/60 p-6 transition-all hover:border-accent-500/40 hover:bg-ink-800">
+                  <h3 className="text-lg font-bold leading-snug text-ash-50 group-hover:text-accent-200">{pb.title}</h3>
+                  <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-accent-300">
+                    Read <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                  </span>
+                </Link>
+              ))}
+            </div>
           </div>
+        </section>
+      ) : (
+        <section className="border-b border-ink-800">
+          <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+            <PlaybookTeasers />
+          </div>
+        </section>
+      )}
 
-          <div className="mt-10">
-            <Disclaimer variant="block" />
-          </div>
+      {/* DISCLAIMER */}
+      <section className="bg-ink-950">
+        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+          <Disclaimer variant="block" />
         </div>
       </section>
     </>
@@ -656,84 +248,97 @@ export default async function HomePage() {
 // Local components
 // ---------------------------------------------------------------------------
 
-function ValuePropCard({
-  icon,
-  title,
-  body,
-  href,
-  linkLabel,
-  accent = "accent",
-}: {
-  icon: React.ReactNode;
-  title: string;
-  body: React.ReactNode;
-  href: string;
-  linkLabel: string;
-  accent?: "accent" | "violet" | "up" | "warn";
+function SectionCard({ icon, title, body, href, linkLabel, accent = "accent" }: {
+  icon: React.ReactNode; title: string; body: string; href: string; linkLabel: string; accent?: "accent" | "up" | "violet" | "warn";
 }) {
-  const tone =
-    accent === "violet"
-      ? "border-violet-500/30 hover:border-violet-400/60"
-      : accent === "up"
-      ? "border-up-500/30 hover:border-up-400/60"
-      : accent === "warn"
-      ? "border-warn-500/30 hover:border-warn-400/60"
-      : "border-accent-500/30 hover:border-accent-400/60";
-  const linkTone =
-    accent === "violet"
-      ? "text-violet-300 hover:text-violet-200"
-      : accent === "up"
-      ? "text-up-300 hover:text-up-200"
-      : accent === "warn"
-      ? "text-warn-300 hover:text-warn-200"
-      : "text-accent-300 hover:text-accent-200";
+  const border = accent === "up" ? "border-up-500/30 hover:border-up-400/60" : accent === "violet" ? "border-violet-500/30 hover:border-violet-400/60" : accent === "warn" ? "border-warn-500/30 hover:border-warn-400/60" : "border-accent-500/30 hover:border-accent-400/60";
+  const link   = accent === "up" ? "text-up-300 hover:text-up-200"           : accent === "violet" ? "text-violet-300 hover:text-violet-200"         : accent === "warn" ? "text-warn-300 hover:text-warn-200"         : "text-accent-300 hover:text-accent-200";
   return (
-    <article
-      className={`flex flex-col gap-3 rounded-2xl border bg-ink-800/60 p-6 transition-colors ${tone}`}
-    >
-      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-ink-900/80 ring-1 ring-inset ring-ink-700">
-        {icon}
-      </div>
+    <article className={`flex flex-col gap-3 rounded-2xl border bg-ink-800/60 p-6 transition-colors ${border}`}>
+      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-ink-900/80 ring-1 ring-inset ring-ink-700">{icon}</div>
       <h3 className="text-lg font-bold text-ash-50">{title}</h3>
       <p className="text-sm leading-relaxed text-ash-300">{body}</p>
-      <Link
-        href={href}
-        className={`mt-1 inline-flex items-center gap-1 text-sm font-semibold ${linkTone}`}
-      >
-        {linkLabel}
-        <ArrowRight className="h-3.5 w-3.5" />
+      <Link href={href} className={`mt-1 inline-flex items-center gap-1 text-sm font-semibold ${link}`}>
+        {linkLabel} <ArrowRight className="h-3.5 w-3.5" />
       </Link>
     </article>
   );
 }
 
-function HowStep({
-  n,
-  title,
-  body,
-  href,
-  linkLabel,
-}: {
-  n: string;
-  title: string;
-  body: string;
-  href: string;
-  linkLabel: string;
-}) {
+function StockFileCard({ sf }: { sf: StockFile }) {
   return (
-    <article className="relative flex flex-col gap-3 rounded-2xl border border-ink-700 bg-ink-800/40 p-6 transition-colors hover:border-ink-600 hover:bg-ink-800/60">
-      <span className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-accent-300">
-        {n}
+    <Link
+      href={`/stocks/${sf.slug.current}`}
+      className="group flex flex-col rounded-2xl border border-ink-600/80 bg-ink-800/60 p-5 transition-all hover:border-ink-500 hover:bg-ink-800"
+    >
+      <div className="flex items-baseline gap-2">
+        <span className="font-mono text-sm font-bold tracking-tight text-ash-50">{sf.ticker}</span>
+        <span className="text-xs text-ash-400">{sf.exchange}</span>
+      </div>
+      <p className="mt-0.5 truncate text-sm text-ash-300 group-hover:text-ash-100">{sf.companyName}</p>
+      <p className="mt-1 text-xs text-ash-500">{sf.sectorLabel}</p>
+      {sf.lastReviewed && (
+        <p className="mt-2 text-[11px] text-ash-600">Reviewed {formatDate(sf.lastReviewed)}</p>
+      )}
+      <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-accent-400 group-hover:text-accent-300">
+        View Stock File <ArrowRight className="h-3 w-3" />
       </span>
-      <h3 className="text-lg font-bold leading-tight text-ash-50">{title}</h3>
-      <p className="text-sm leading-relaxed text-ash-300">{body}</p>
-      <Link
-        href={href}
-        className="mt-auto inline-flex items-center gap-1 text-sm font-semibold text-accent-300 hover:text-accent-200"
-      >
-        {linkLabel}
-        <ArrowRight className="h-3.5 w-3.5" />
-      </Link>
-    </article>
+    </Link>
+  );
+}
+
+function TopListTeasers() {
+  const lists = [
+    { slug: "top-canadian-dividend-stocks-tfsa", badge: "Dividend · TFSA", title: "Top 10 Canadian Dividend Stocks for TFSA" },
+    { slug: "top-canadian-growth-stocks-under-40", badge: "Growth · Under $40", title: "Top 10 Canadian Growth Stocks Under $40" },
+    { slug: "top-canadian-bank-stocks", badge: "Banks", title: "Top 10 Canadian Bank Stocks" },
+    { slug: "top-canadian-etfs-tfsa", badge: "ETFs · TFSA", title: "Top 10 Canadian ETFs for TFSA" },
+  ];
+  return (
+    <>
+      <div className="mb-6">
+        <div className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-400">Quarterly updated</div>
+        <h2 className="mt-1 text-2xl font-bold tracking-tight text-ash-50">Top Lists</h2>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {lists.map((l) => (
+          <Link key={l.slug} href={`/best/${l.slug}`} className="group flex flex-col rounded-2xl border border-ink-700 bg-ink-800/60 p-5 transition-all hover:border-accent-500/40 hover:bg-ink-800">
+            <span className="text-xs font-semibold uppercase tracking-wider text-ash-400">{l.badge}</span>
+            <h3 className="mt-2 text-base font-bold text-ash-50 group-hover:text-accent-200">{l.title}</h3>
+            <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-accent-300">See the list <ArrowRight className="h-3 w-3" /></span>
+          </Link>
+        ))}
+      </div>
+      <div className="mt-4 text-center"><Link href="/best" className="text-sm text-ash-500 hover:text-ash-300">View all Top Lists →</Link></div>
+    </>
+  );
+}
+
+function PlaybookTeasers() {
+  const playbooks = [
+    { slug: "tfsa-asset-location", tag: "Tax strategy", title: "The TFSA Asset Location Playbook", excerpt: "Which stocks belong in your TFSA, which in your RRSP, and which are fine in a non-registered account." },
+    { slug: "canadian-dividend-investing", tag: "Income", title: "The Canadian Dividend Investing Playbook", excerpt: "Eligible dividends, dividend growth streaks, and why yield alone is the wrong metric." },
+    { slug: "canadian-precious-metals", tag: "Precious metals", title: "The Canadian Precious Metals Playbook", excerpt: "Gold, silver, miners, and royalty companies — metals exposure in a Canadian portfolio." },
+  ];
+  return (
+    <>
+      <div className="mb-6 flex items-end justify-between">
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-400">Deep-dive guides</div>
+          <h2 className="mt-1 text-2xl font-bold tracking-tight text-ash-50">Playbooks</h2>
+        </div>
+        <Link href="/playbooks" className="group inline-flex items-center gap-1 text-sm font-semibold text-accent-300 hover:text-accent-200">All Playbooks <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" /></Link>
+      </div>
+      <div className="grid gap-5 sm:grid-cols-3">
+        {playbooks.map((p) => (
+          <Link key={p.slug} href={`/playbooks/${p.slug}`} className="group flex flex-col rounded-2xl border border-ink-700 bg-ink-800/60 p-6 transition-all hover:border-accent-500/40 hover:bg-ink-800">
+            <span className="text-xs font-semibold uppercase tracking-wider text-ash-400">{p.tag}</span>
+            <h3 className="mt-2 text-lg font-bold leading-snug text-ash-50 group-hover:text-accent-200">{p.title}</h3>
+            <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-ash-400">{p.excerpt}</p>
+            <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-accent-300">Read <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" /></span>
+          </Link>
+        ))}
+      </div>
+    </>
   );
 }

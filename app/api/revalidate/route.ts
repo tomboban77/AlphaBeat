@@ -5,13 +5,12 @@ interface WebhookPayload {
   _type?: string;
   slug?: { current?: string };
   ticker?: string;
-  sector?: { _ref?: string };
 }
 
 /**
  * Sanity webhook receiver. Configure in Sanity → API → Webhooks:
  *   URL: https://yourdomain.com/api/revalidate
- *   Filter: _type in ["stock","etfEntry","sector","weeklyPick","insight","marketNote","sponsorship","siteSettings"]
+ *   Filter: _type in ["stockFile","brief","playbook","rankedList","siteSettings","sponsorship"]
  *   Header: x-revalidation-secret: <REVALIDATION_SECRET>
  */
 export async function POST(request: NextRequest) {
@@ -27,56 +26,34 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: "Bad JSON" }, { status: 400 });
   }
 
-  const { _type: type, slug, ticker } = body;
+  const { _type: type, slug } = body;
   const slugCurrent = slug?.current;
 
-  // Always nuke the layout cache (header/footer ticker symbols may change).
+  // Always revalidate layout (marquee symbols may change).
   revalidatePath("/", "layout");
 
   switch (type) {
-    case "stock": {
+    case "stockFile": {
       revalidatePath("/stocks");
-      revalidatePath("/sectors");
-      revalidatePath("/screener");
-      revalidatePath("/hidden-gems");
-      revalidatePath("/top");
-      if (slugCurrent) {
-        revalidatePath(`/stocks/${slugCurrent}`);
-      }
-      // Stocks may be referenced by ticker uppercase elsewhere
-      if (ticker) revalidatePath(`/stocks/${ticker.toLowerCase()}`);
-      break;
-    }
-    case "etfEntry": {
-      revalidatePath("/etfs");
-      if (slugCurrent) revalidatePath(`/etfs/${slugCurrent}`);
-      break;
-    }
-    case "sector": {
-      revalidatePath("/sectors");
-      revalidatePath("/top");
-      if (slugCurrent) revalidatePath(`/sectors/${slugCurrent}`);
-      break;
-    }
-    case "weeklyPick": {
-      revalidatePath("/weekly-picks");
-      if (slugCurrent) revalidatePath(`/weekly-picks/${slugCurrent}`);
-      break;
-    }
-    case "topList": {
-      revalidatePath("/top");
-      if (slugCurrent) revalidatePath(`/top/${slugCurrent}`);
-      break;
-    }
-    case "insight": {
-      revalidatePath("/insights");
-      if (slugCurrent) revalidatePath(`/insights/${slugCurrent}`);
-      break;
-    }
-    case "marketNote": {
-      // Pulse + homepage both surface the latest note.
-      revalidatePath("/pulse");
       revalidatePath("/");
+      if (slugCurrent) revalidatePath(`/stocks/${slugCurrent}`);
+      break;
+    }
+    case "brief": {
+      revalidatePath("/brief");
+      revalidatePath("/");
+      if (slugCurrent) revalidatePath(`/brief/${slugCurrent}`);
+      break;
+    }
+    case "playbook": {
+      revalidatePath("/playbooks");
+      if (slugCurrent) revalidatePath(`/playbooks/${slugCurrent}`);
+      break;
+    }
+    case "rankedList": {
+      revalidatePath("/best");
+      revalidatePath("/");
+      if (slugCurrent) revalidatePath(`/best/${slugCurrent}`);
       break;
     }
     case "sponsorship":

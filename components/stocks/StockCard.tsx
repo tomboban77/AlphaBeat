@@ -4,7 +4,6 @@ import { Crown, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import type { Stock, MarketQuote, CandlePoint } from "@/lib/types";
 import { urlFor } from "@/lib/sanity/image";
 import { cn, displayTicker, formatPercent, formatPrice } from "@/lib/utils";
-import SectorBadge from "@/components/sectors/SectorBadge";
 import WatchlistButton from "@/components/watchlist/WatchlistButton";
 import Sparkline from "@/components/market/Sparkline";
 
@@ -132,9 +131,9 @@ export default function StockCard({
       {variant !== "compact" && (
         <footer className="relative z-20 mt-4 flex items-center justify-between border-t border-ink-700 pt-3">
           {stock.sector ? (
-            <div>
-              <SectorBadge sector={stock.sector} asLink={false} />
-            </div>
+            <span className="truncate text-xs font-medium text-ash-400">
+              {stock.sector.title}
+            </span>
           ) : (
             <span />
           )}

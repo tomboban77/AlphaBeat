@@ -5,19 +5,16 @@ import { displayLabel } from "@/lib/market/symbols";
 import { formatPercent, formatPrice } from "@/lib/utils";
 
 const FALLBACK_SYMBOLS = [
-  "^GSPC",
-  "^IXIC",
-  "^DJI",
   "^GSPTSE",
-  "AAPL",
-  "MSFT",
-  "NVDA",
-  "GOOGL",
-  "AMZN",
-  "META",
-  "TSLA",
-  "SHOP.TO",
+  "^GSPC",
   "RY.TO",
+  "SHOP.TO",
+  "ENB.TO",
+  "CNQ.TO",
+  "TD.TO",
+  "BNS.TO",
+  "OTEX.TO",
+  "WCN.TO",
 ];
 
 /**

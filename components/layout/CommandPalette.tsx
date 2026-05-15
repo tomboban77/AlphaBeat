@@ -3,11 +3,11 @@
 import { Command } from "cmdk";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Layers, LineChart, Newspaper, PieChart, Search, Star, TrendingUp } from "lucide-react";
+import { LineChart, Layers, Newspaper, Search, Star, TrendingUp } from "lucide-react";
 import { useWatchlist } from "@/lib/watchlist";
 
 interface SearchHit {
-  type: "stock" | "etf" | "sector" | "insight";
+  type: "stock";
   title: string;
   subtitle?: string;
   href: string;
@@ -144,133 +144,51 @@ export default function CommandPalette({ open, onOpenChange }: CommandPalettePro
                 <Command.Group heading="Jump to">
                   <Command.Item onSelect={() => go("/")}>
                     <TrendingUp className="h-4 w-4 text-accent-400" />
-                    <span>Home — market pulse</span>
+                    <span>Home</span>
                   </Command.Item>
-                  <Command.Item onSelect={() => go("/weekly-picks")}>
-                    <LineChart className="h-4 w-4 text-up-400" />
-                    <span>This week&rsquo;s Top 10 picks</span>
+                  <Command.Item onSelect={() => go("/brief")}>
+                    <Newspaper className="h-4 w-4 text-accent-400" />
+                    <span>The Brief — weekly investing newsletter</span>
                   </Command.Item>
                   <Command.Item onSelect={() => go("/stocks")}>
+                    <LineChart className="h-4 w-4 text-up-400" />
+                    <span>Stock Files — score-driven reference pages</span>
+                  </Command.Item>
+                  <Command.Item onSelect={() => go("/playbooks")}>
                     <Layers className="h-4 w-4 text-violet-400" />
-                    <span>Browse all stocks</span>
+                    <span>Playbooks — deep-dive investing guides</span>
                   </Command.Item>
-                  <Command.Item onSelect={() => go("/sectors")}>
-                    <PieChart className="h-4 w-4 text-fuchsia-400" />
-                    <span>Sectors</span>
-                  </Command.Item>
-                  <Command.Item onSelect={() => go("/etfs")}>
-                    <Layers className="h-4 w-4 text-sky-400" />
-                    <span>ETFs</span>
-                  </Command.Item>
-                  <Command.Item onSelect={() => go("/screener")}>
+                  <Command.Item onSelect={() => go("/best")}>
                     <Search className="h-4 w-4 text-amber-400" />
-                    <span>Stock screener</span>
+                    <span>Top Lists — best Canadian stocks by category</span>
                   </Command.Item>
                   <Command.Item onSelect={() => go("/watchlist")}>
                     <Star className="h-4 w-4 text-accent-400" />
                     <span>My watchlist ({watchlist.length})</span>
                   </Command.Item>
-                  <Command.Item onSelect={() => go("/insights")}>
-                    <Newspaper className="h-4 w-4 text-emerald-400" />
-                    <span>Insights & analysis</span>
-                  </Command.Item>
                 </Command.Group>
               </>
             )}
 
-            {local.filter((h) => h.type === "stock").length > 0 && (
-              <Command.Group heading="Stocks">
-                {local
-                  .filter((h) => h.type === "stock")
-                  .map((h) => (
-                    <Command.Item
-                      key={`s-${h.href}`}
-                      onSelect={() => go(h.href)}
-                      value={`${h.ticker || ""} ${h.title}`}
-                    >
-                      <LineChart className="h-4 w-4 text-up-400" />
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate text-ash-100">{h.title}</div>
-                        {h.subtitle && (
-                          <div className="truncate text-xs text-ash-400">
-                            {h.subtitle}
-                          </div>
-                        )}
-                      </div>
-                    </Command.Item>
-                  ))}
-              </Command.Group>
-            )}
-
-            {local.filter((h) => h.type === "etf").length > 0 && (
-              <Command.Group heading="ETFs">
-                {local
-                  .filter((h) => h.type === "etf")
-                  .map((h) => (
-                    <Command.Item
-                      key={`e-${h.href}`}
-                      onSelect={() => go(h.href)}
-                      value={`${h.ticker || ""} ${h.title}`}
-                    >
-                      <Layers className="h-4 w-4 text-sky-400" />
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate text-ash-100">{h.title}</div>
-                        {h.subtitle && (
-                          <div className="truncate text-xs text-ash-400">
-                            Tracks {h.subtitle}
-                          </div>
-                        )}
-                      </div>
-                    </Command.Item>
-                  ))}
-              </Command.Group>
-            )}
-
-            {local.filter((h) => h.type === "sector").length > 0 && (
-              <Command.Group heading="Sectors">
-                {local
-                  .filter((h) => h.type === "sector")
-                  .map((h) => (
-                    <Command.Item
-                      key={`sec-${h.href}`}
-                      onSelect={() => go(h.href)}
-                      value={h.title}
-                    >
-                      <PieChart className="h-4 w-4 text-fuchsia-400" />
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate text-ash-100">{h.title}</div>
-                        {h.subtitle && (
-                          <div className="truncate text-xs text-ash-400">
-                            {h.subtitle}
-                          </div>
-                        )}
-                      </div>
-                    </Command.Item>
-                  ))}
-              </Command.Group>
-            )}
-
-            {local.filter((h) => h.type === "insight").length > 0 && (
-              <Command.Group heading="Insights">
-                {local
-                  .filter((h) => h.type === "insight")
-                  .map((h) => (
-                    <Command.Item
-                      key={`i-${h.href}`}
-                      onSelect={() => go(h.href)}
-                      value={h.title}
-                    >
-                      <Newspaper className="h-4 w-4 text-emerald-400" />
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate text-ash-100">{h.title}</div>
-                        {h.subtitle && (
-                          <div className="truncate text-xs text-ash-400">
-                            {h.subtitle}
-                          </div>
-                        )}
-                      </div>
-                    </Command.Item>
-                  ))}
+            {local.length > 0 && (
+              <Command.Group heading="Stock Files">
+                {local.map((h) => (
+                  <Command.Item
+                    key={`s-${h.href}`}
+                    onSelect={() => go(h.href)}
+                    value={`${h.ticker || ""} ${h.title}`}
+                  >
+                    <LineChart className="h-4 w-4 text-up-400" />
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-ash-100">{h.title}</div>
+                      {h.subtitle && (
+                        <div className="truncate text-xs text-ash-400">
+                          {h.subtitle}
+                        </div>
+                      )}
+                    </div>
+                  </Command.Item>
+                ))}
               </Command.Group>
             )}
 

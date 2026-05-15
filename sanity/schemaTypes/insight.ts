@@ -2,7 +2,7 @@ import { defineField, defineType } from "sanity";
 
 export default defineType({
   name: "insight",
-  title: "Insight (article)",
+  title: "Insight (DEPRECATED — migrate to Brief/Playbook)",
   type: "document",
   fields: [
     defineField({
@@ -39,12 +39,6 @@ export default defineType({
       title: "Author",
       type: "reference",
       to: [{ type: "author" }],
-    }),
-    defineField({
-      name: "sector",
-      title: "Sector",
-      type: "reference",
-      to: [{ type: "sector" }],
     }),
     defineField({
       name: "tickers",

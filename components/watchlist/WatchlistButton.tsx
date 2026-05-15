@@ -3,6 +3,7 @@
 import { Star } from "lucide-react";
 import { useWatchlist, useWatchlistActions } from "@/lib/watchlist";
 import { cn } from "@/lib/utils";
+import { trackWatchlistAdd } from "@/lib/analytics";
 
 interface WatchlistButtonProps {
   symbol: string;
@@ -24,7 +25,8 @@ export default function WatchlistButton({
   const handle = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    toggle(symbol);
+    const added = toggle(symbol);
+    if (added) trackWatchlistAdd(symbol);
   };
 
   if (variant === "pill") {

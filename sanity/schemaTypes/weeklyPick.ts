@@ -2,7 +2,7 @@ import { defineField, defineType } from "sanity";
 
 export default defineType({
   name: "weeklyPick",
-  title: "Weekly Top 10",
+  title: "Weekly Top 10 (DEPRECATED — migrate to Brief)",
   type: "document",
   fields: [
     defineField({
