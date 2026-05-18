@@ -43,6 +43,7 @@ import AccountFitTable from "@/components/scoring/AccountFitTable";
 import { StockFileTracker } from "@/components/analytics/PageTracker";
 import NewsletterCTA from "@/components/newsletter/NewsletterCTA";
 import Disclaimer from "@/components/ui/Disclaimer";
+import AffiliateSlot from "@/lib/affiliates/slots";
 
 export const revalidate = 600;
 
@@ -294,16 +295,7 @@ export default async function StockFilePage({ params }: PageProps) {
               </dl>
             </div>
 
-            {/* Affiliate slot — dormant placeholder */}
-            <div className="rounded-2xl border border-ink-600/50 bg-ink-800/30 p-5 text-sm">
-              <div className="text-xs font-semibold uppercase tracking-wider text-ash-500">Open an account</div>
-              <p className="mt-2 text-xs leading-relaxed text-ash-500">
-                {isCanadian
-                  ? "Buy this stock on Wealthsimple or Questrade — both offer commission-free TSX trading."
-                  : "Available on Wealthsimple and Questrade."}
-              </p>
-              <p className="mt-2 text-[10px] text-ash-600">Affiliate links coming soon.</p>
-            </div>
+            <AffiliateSlot context="sidebar" enableAffiliates={true} />
 
             {/* IR link */}
             {profile?.weburl && (

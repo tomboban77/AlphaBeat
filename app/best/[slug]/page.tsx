@@ -9,6 +9,7 @@ import type { RankedList } from "@/lib/types";
 import { absoluteUrl, formatDate, SITE_NAME } from "@/lib/utils";
 
 import PortableProse from "@/components/portable/PortableProse";
+import AffiliateSlot from "@/lib/affiliates/slots";
 import { TopListTracker } from "@/components/analytics/PageTracker";
 import NewsletterCTA from "@/components/newsletter/NewsletterCTA";
 import Disclaimer from "@/components/ui/Disclaimer";
@@ -149,13 +150,8 @@ export default async function RankedListPage({ params }: PageProps) {
         </ol>
       )}
 
-      {/* Affiliate slot (dormant) */}
-      <div className="mt-8 rounded-2xl border border-ink-600/50 bg-ink-800/30 p-5">
-        <div className="text-xs font-semibold uppercase tracking-wider text-ash-500">Ready to invest?</div>
-        <p className="mt-2 text-sm text-ash-500">
-          All stocks on this list are available commission-free on Wealthsimple and Questrade.
-        </p>
-        <p className="mt-1 text-[10px] text-ash-600">Affiliate links coming soon.</p>
+      <div className="mt-8">
+        <AffiliateSlot context="top-list" enableAffiliates={true} />
       </div>
 
       {/* Changelog */}
