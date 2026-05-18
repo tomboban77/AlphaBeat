@@ -13,7 +13,8 @@
       "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\Blog-AI\\\\content\\\\playbooks\")",
       "Bash(Get-ChildItem -Path \"D:\\\\Blog-AI\" -Recurse -Directory)",
       "Bash(Select-Object -First 30)",
-      "Bash(Format-Table FullName)"
+      "Bash(Format-Table FullName)",
+      "Bash(^d\")"
     ]
   }
 }

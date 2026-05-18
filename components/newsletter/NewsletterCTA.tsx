@@ -1,10 +1,9 @@
-import { Mail, Zap } from "lucide-react";
+import { Mail } from "lucide-react";
 import NewsletterForm from "./NewsletterForm";
 import { cn } from "@/lib/utils";
 
 interface NewsletterCTAProps {
   source: string;
-  /** Visual style. `card` = bordered panel; `banner` = full-width gradient strip; `inline` = compact. */
   variant?: "card" | "banner" | "inline";
   eyebrow?: string;
   title?: string;
@@ -12,18 +11,19 @@ interface NewsletterCTAProps {
   className?: string;
 }
 
-const DEFAULT_TITLE = "Get the Top 10 a week before the web.";
-const DEFAULT_DESC =
-  "Subscribers get the full Top 10 every Sunday at 8pm ET, before Monday's open. The web archive shows picks 1-3 in full and unlocks the rest seven days later. Free.";
+const DEFAULT_TITLE = "The Brief. Every Sunday.";
+const DEFAULT_DESC  =
+  "One featured Canadian stock. One tax or account tip. One TSX market note. Clear, direct, done in under 10 minutes. Free.";
 
 export default function NewsletterCTA({
   source,
   variant = "card",
-  eyebrow = "Newsletter",
+  eyebrow = "Every Sunday",
   title = DEFAULT_TITLE,
   description = DEFAULT_DESC,
   className,
 }: NewsletterCTAProps) {
+
   if (variant === "inline") {
     return (
       <div
@@ -52,7 +52,7 @@ export default function NewsletterCTA({
     return (
       <section
         className={cn(
-          "relative overflow-hidden rounded-3xl border border-accent-500/30 bg-gradient-to-br from-ink-900 via-ink-900 to-accent-950/40 p-8 sm:p-10",
+          "relative overflow-hidden rounded-3xl border border-accent-500/30 bg-linear-to-br from-ink-900 via-ink-900 to-accent-950/40 p-8 sm:p-10",
           className
         )}
       >
@@ -63,7 +63,6 @@ export default function NewsletterCTA({
         <div className="grid gap-6 lg:grid-cols-2 lg:items-center lg:gap-10">
           <div>
             <div className="inline-flex items-center gap-1 rounded-full border border-accent-500/30 bg-accent-500/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-accent-300">
-              <Zap className="h-3 w-3" />
               {eyebrow}
             </div>
             <h2 className="mt-3 text-2xl font-bold tracking-tight text-ash-50 sm:text-3xl">
@@ -71,14 +70,14 @@ export default function NewsletterCTA({
             </h2>
             <p className="mt-2 max-w-xl text-ash-300">{description}</p>
             <ul className="mt-4 space-y-1.5 text-sm text-ash-400">
-              <li>• Full Top 10 thesis, 7 days before the web</li>
-              <li>• Same-day Hidden Gem alerts on sub-$20 ideas</li>
-              <li>• &ldquo;What I&rsquo;m Watching&rdquo; macro read &mdash; email-only</li>
+              <li>• One featured Canadian stock with a full thesis</li>
+              <li>• A tax or account tip — TFSA, RRSP, eligible dividends</li>
+              <li>• TSX market context in one sentence</li>
               <li>• Unsubscribe in one click. No filler.</li>
             </ul>
           </div>
           <div className="space-y-3">
-            <NewsletterForm source={source} ctaLabel="Get the newsletter" />
+            <NewsletterForm source={source} ctaLabel="Get the Brief free" />
             <p className="text-xs text-ash-500">
               By subscribing you agree to our{" "}
               <a href="/privacy-policy" className="underline-offset-2 hover:underline">
@@ -115,7 +114,7 @@ export default function NewsletterCTA({
         </div>
       </div>
       <div className="mt-5">
-        <NewsletterForm source={source} ctaLabel="Subscribe" />
+        <NewsletterForm source={source} ctaLabel="Subscribe free" />
       </div>
       <p className="mt-3 text-xs text-ash-500">
         Free. Unsubscribe anytime. We never share your address.

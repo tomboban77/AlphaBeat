@@ -13,6 +13,7 @@ const NAV = [
   { name: "The Brief", href: "/brief" },
   { name: "Stock Files", href: "/stocks" },
   { name: "Playbooks", href: "/playbooks" },
+  { name: "Top Lists", href: "/best" },
   { name: "Watchlist", href: "/watchlist" },
 ];
 

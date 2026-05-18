@@ -2,7 +2,7 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 export const SITE_NAME = "AlphaBeat";
-export const SITE_TAGLINE = "Investing intelligence, beautifully simple.";
+export const SITE_TAGLINE = "Canadian investing, made clearer.";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

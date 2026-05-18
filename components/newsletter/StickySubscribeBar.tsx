@@ -123,10 +123,10 @@ export default function StickySubscribeBar() {
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-ash-50">
-              Get the weekly Top 10 a week before the web.
+              The Brief — every Sunday. Canadian investing, made clearer.
             </p>
             <p className="hidden text-xs text-ash-400 sm:block">
-              Free Sundays. Unsubscribe in one click. No spam, ever.
+              One stock, one tax tip, one TSX note. Free. Unsubscribe anytime.
             </p>
           </div>
           <button

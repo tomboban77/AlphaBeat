@@ -22,31 +22,30 @@ export const metadata: Metadata = {
 
 const placements = [
   {
-    name: "Spotlight Card",
-    location: "Home + Sector pages",
+    name: "Stock File Placement",
+    location: "Your /stocks/[ticker] page",
     description:
-      "A premium card that sits beside trending stocks. Custom logo, headline, and CTA button. 'Sponsored' ribbon is permanent and prominent.",
-    cta: "Most popular",
+      "A clearly-disclosed sponsor placement on your Stock File page. Runs beside the editor's independent take — never replaces it. Visible to investors who searched for your ticker.",
+    cta: "Most targeted",
     highlight: true,
   },
   {
-    name: "Stock Page Takeover",
-    location: "Your /stocks/[ticker] page",
+    name: "Top List Feature",
+    location: "Relevant /best/[list] page",
     description:
-      "A sponsored ribbon on your own stock detail page. Disclosure runs beside the editor's take — never replaces it.",
+      "Placement on the quarterly Top List most relevant to your company — dividend stocks, bank stocks, energy, etc. Disclosed, labelled, and positioned for the right audience.",
   },
   {
-    name: "Weekly Top 10 Inclusion",
-    location: "Editorial discretion only",
+    name: "Brief Sponsorship",
+    location: "One weekly issue",
     description:
-      "We do NOT sell positions in the weekly Top 10. Editorial decides. We do offer adjacent placements next to the weekly list.",
-    cta: "Editorial firewall",
+      "A 'Sponsored by' slot in a single Brief issue. The editorial content — thesis, tax tip, TSX note — remains entirely independent. Sponsorship is a placement, not an endorsement.",
   },
   {
-    name: "Insight Sponsorship",
-    location: "Single insight article",
+    name: "Homepage Placement",
+    location: "alphabeat.io home page",
     description:
-      "Brand the top of a relevant insight piece (analysis, earnings recap, etc.). Article remains independent — sponsorship is a placement, not an endorsement.",
+      "Reach Canadian DIY investors on arrival. Homepage placements are limited to one active sponsor at a time and are clearly labelled.",
   },
 ];
 
