@@ -10,6 +10,7 @@ import { useWatchlist } from "@/lib/watchlist";
 import { cn } from "@/lib/utils";
 
 const NAV = [
+  { name: "Start Here", href: "/start", highlight: true },
   { name: "The Brief", href: "/brief" },
   { name: "Stock Files", href: "/stocks" },
   { name: "Playbooks", href: "/playbooks" },
@@ -54,7 +55,9 @@ export default function Header() {
                 href={item.href}
                 className={cn(
                   "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-                  isActive(item.href)
+                  item.highlight && !isActive(item.href)
+                    ? "text-accent-300 hover:bg-ink-800 hover:text-accent-200"
+                    : isActive(item.href)
                     ? "bg-ink-700 text-ash-50"
                     : "text-ash-300 hover:bg-ink-800 hover:text-ash-50"
                 )}
@@ -140,7 +143,9 @@ export default function Header() {
                   onClick={closeMobile}
                   className={cn(
                     "rounded-md px-3 py-2 text-sm font-medium",
-                    isActive(item.href)
+                    item.highlight && !isActive(item.href)
+                      ? "text-accent-300 hover:bg-ink-800"
+                      : isActive(item.href)
                       ? "bg-ink-700 text-ash-50"
                       : "text-ash-200 hover:bg-ink-800"
                   )}
