@@ -38,7 +38,6 @@ import { buildScore } from "@/lib/scoring";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import WatchlistButton from "@/components/watchlist/WatchlistButton";
 import StockChart from "@/components/market/StockChart";
-import StockCard from "@/components/stocks/StockCard";
 import ScoreDisplay from "@/components/scoring/ScoreDisplay";
 import AccountFitTable from "@/components/scoring/AccountFitTable";
 import { StockFileTracker } from "@/components/analytics/PageTracker";
@@ -339,7 +338,22 @@ export default async function StockFilePage({ params }: PageProps) {
             </div>
             <div className="grid gap-5 sm:grid-cols-3">
               {related.map((r) => (
-                <StockCard key={r._id} stock={r as unknown as import("@/lib/types").Stock} />
+                <Link
+                  key={r._id}
+                  href={`/stocks/${r.slug.current}`}
+                  className="group flex flex-col rounded-2xl border border-ink-600/80 bg-ink-800/60 p-5 transition-all hover:border-accent-500/40 hover:bg-ink-800"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-mono text-sm font-bold text-ash-50 group-hover:text-accent-200">
+                      {r.ticker}
+                    </span>
+                    {(r.exchange === "TSX" || r.exchange === "TSXV") && (
+                      <span className="text-[10px]">🇨🇦</span>
+                    )}
+                  </div>
+                  <p className="mt-0.5 text-xs text-ash-400">{r.companyName}</p>
+                  <p className="mt-2 text-[11px] text-ash-600">{r.sectorLabel}</p>
+                </Link>
               ))}
             </div>
           </section>

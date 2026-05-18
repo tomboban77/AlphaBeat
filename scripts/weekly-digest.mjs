@@ -41,7 +41,7 @@ if (!resendKey)            {
 
 const sanity   = createClient({ projectId, dataset, token, apiVersion: "2024-01-01", useCdn: false });
 const BASE_FH  = "https://finnhub.io/api/v1";
-const FROM     = "AlphaBeat <brief@alphabeat.io>"; // set a verified Resend sender domain
+const FROM     = "Tom @ AlphaBeat <tom@alphabeat.io>";
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 

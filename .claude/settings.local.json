@@ -10,7 +10,10 @@
       "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\Blog-AI\\\\content\\\\templates\")",
       "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\Blog-AI\\\\content\\\\stocks\")",
       "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\Blog-AI\\\\content\\\\briefs\")",
-      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\Blog-AI\\\\content\\\\playbooks\")"
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\Blog-AI\\\\content\\\\playbooks\")",
+      "Bash(Get-ChildItem -Path \"D:\\\\Blog-AI\" -Recurse -Directory)",
+      "Bash(Select-Object -First 30)",
+      "Bash(Format-Table FullName)"
     ]
   }
 }

@@ -35,12 +35,6 @@ export default defineType({
       description: "G-XXXXXXXXXX",
     }),
     defineField({
-      name: "adsensePublisherId",
-      title: "AdSense publisher ID",
-      type: "string",
-      description: "ca-pub-XXXXXXXXXXXXXXXX",
-    }),
-    defineField({
       name: "marketTickerSymbols",
       title: "Market ticker symbols (top bar)",
       type: "array",

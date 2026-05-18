@@ -16,6 +16,7 @@
     "seed:lists": "node scripts/seed-phase4-lists.mjs",
     "import-content": "node scripts/import-content.mjs",
     "populate-editorial": "node scripts/populate-editorial.mjs",
+    "publish-all": "node scripts/publish-all.mjs",
     "digest": "node scripts/weekly-digest.mjs"
   },
   "dependencies": {
