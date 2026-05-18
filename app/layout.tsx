@@ -4,6 +4,7 @@ import Script from "next/script";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import MarketTicker from "@/components/market/MarketTicker";
+import StickySubscribeBar from "@/components/newsletter/StickySubscribeBar";
 import { siteUrl, SITE_NAME } from "@/lib/utils";
 import "./globals.css";
 
@@ -71,6 +72,7 @@ export default function RootLayout({
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
+        <StickySubscribeBar />
 
         {gaId && (
           <>

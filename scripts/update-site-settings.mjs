@@ -1,0 +1,29 @@
+import { readFileSync } from "fs";
+import { createClient } from "@sanity/client";
+const env       = readFileSync(".env.local", "utf8");
+const projectId = env.match(/NEXT_PUBLIC_SANITY_PROJECT_ID=(.+)/)?.[1]?.trim();
+const dataset   = env.match(/NEXT_PUBLIC_SANITY_DATASET=(.+)/)?.[1]?.trim() || "production";
+const token     = env.match(/SANITY_API_TOKEN=(.+)/)?.[1]?.trim();
+const sanity    = createClient({ projectId, dataset, token, apiVersion: "2024-01-01", useCdn: false });
+
+const doc = await sanity.fetch(`*[_type == "siteSettings"][0] { _id }`);
+
+await sanity.patch(doc._id).set({
+  tagline: "Canadian investing, made clearer.",
+  marketTickerSymbols: [
+    "^GSPTSE",
+    "^GSPC",
+    "RY.TO",
+    "ENB.TO",
+    "SHOP.TO",
+    "CNQ.TO",
+    "TD.TO",
+    "AEM.TO",
+    "FTS.TO",
+    "WCN.TO",
+  ],
+}).commit();
+
+console.log("✅ siteSettings updated");
+console.log("   Tagline: Canadian investing, made clearer.");
+console.log("   Marquee: ^GSPTSE, ^GSPC, RY.TO, ENB.TO, SHOP.TO, CNQ.TO, TD.TO, AEM.TO, FTS.TO, WCN.TO");
