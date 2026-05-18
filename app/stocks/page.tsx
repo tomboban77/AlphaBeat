@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BarChart2 } from "lucide-react";
 
+import AffiliateSlot from "@/lib/affiliates/slots";
 import { client } from "@/lib/sanity/client";
 import { allPublishedStockFilesQuery } from "@/lib/sanity/queries";
 import { groq } from "next-sanity";
@@ -92,7 +93,8 @@ export default async function StocksPage() {
         </div>
       )}
 
-      <div className="mt-14">
+      <div className="mt-14 space-y-6">
+        <AffiliateSlot context="top-list" enableAffiliates={true} />
         <Disclaimer variant="block" />
       </div>
     </div>

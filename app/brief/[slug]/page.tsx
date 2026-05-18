@@ -10,6 +10,7 @@ import { absoluteUrl, formatDate, SITE_NAME } from "@/lib/utils";
 
 import PortableProse from "@/components/portable/PortableProse";
 import { ScrollTracker } from "@/components/analytics/PageTracker";
+import AffiliateSlot from "@/lib/affiliates/slots";
 import NewsletterCTA from "@/components/newsletter/NewsletterCTA";
 import Disclaimer from "@/components/ui/Disclaimer";
 import Breadcrumb from "@/components/ui/Breadcrumb";
@@ -120,8 +121,12 @@ export default async function BriefIssuePage({ params }: PageProps) {
         </section>
       )}
 
-      {/* Subscribe CTA */}
-      <NewsletterCTA source="brief-issue" variant="banner" />
+      {/* Affiliate + Subscribe */}
+      <AffiliateSlot context="stock-file" enableAffiliates={true} />
+
+      <div className="mt-6">
+        <NewsletterCTA source="brief-issue" variant="banner" />
+      </div>
 
       {/* Nav */}
       <div className="mt-10 flex justify-between">
